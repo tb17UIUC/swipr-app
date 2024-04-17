@@ -1,51 +1,52 @@
 import React, { useState, useEffect } from 'react';
-import ClothingCard from './ClothingCard'; // Assuming you have a ClothingCard component
+import ClothingCard from './ClothingCard'; // Ensure the component is correctly imported
+import { HeartIcon, HandThumbDownIcon } from '@heroicons/react/24/solid';
 
-// Correct the function parameter to use destructuring for props
 export default function ClothesScreen({ clothingItemList }) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [clothingItems, setClothingItems] = useState([]);
 
     useEffect(() => {
-        // Set the clothing items from the props
-        setCurrentIndex(0);
-        setClothingItems(clothingItemList);
-    }, [clothingItemList]); // Ensure clothingItemList is in the dependency array
+        setClothingItems(clothingItemList); // Simplified use of state
+    }, [clothingItemList]);
 
-    const handleSwipe = (opinion) => {
+    const handleSwipe = async (opinion) => {
         if (currentIndex < clothingItems.length - 1) {
-            setCurrentIndex(currentIndex + 1);
+            setCurrentIndex((prev) => prev + 1);
         } else {
             console.log('Reached the end of the list');
         }
 
-        if (opinion === 'l') {
-            console.log('Liked item');
-        } else if (opinion === 'd') {
-            console.log('Disliked item');
+        const currentClothingItem = clothingItems[currentIndex];
+        if (currentClothingItem) {
+            await postOpinion({
+                userId: userId,
+                clothingId: currentClothingItem.Clothing_Id,
+                opinionType: opinion === 'l' ? 'L' : 'D',
+            });
         }
     };
 
     return (
-        <div className="relative flex h-screen items-center justify-center">
-            <div className="absolute inset-0 bg-gray-200">
+        <div className="relative flex flex-row items-center justify-center">
+            {/* Navigation buttons with Heroicons */}
+            <button
+                onClick={() => handleSwipe('l')}
+                className="bg-primary hover:bg-tertiary rounded-full p-5 shadow-lg mr-4"
+            >
+                <HandThumbDownIcon className="h-6 w-6 text-white" />
+            </button>
+            <div className="bg-gray-200">
                 {clothingItems.length > 0 &&
                     currentIndex < clothingItems.length && (
                         <ClothingCard clothing={clothingItems[currentIndex]} />
                     )}
             </div>
-            {/* Navigation buttons */}
-            <button
-                onClick={() => handleSwipe('l')}
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-lime-500 hover:bg-lime-600 rounded-full p-4 shadow-lg"
-            >
-                {/* Left arrow icon */}
-            </button>
             <button
                 onClick={() => handleSwipe('d')}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-lime-500 hover:bg-lime-600 rounded-full p-4 shadow-lg"
+                className="bg-primary hover:bg-tertiary rounded-full p-5 shadow-lg ml-4"
             >
-                {/* Right arrow icon */}
+                <HeartIcon className="h-6 w-6 text-white" />
             </button>
         </div>
     );
