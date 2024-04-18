@@ -1,8 +1,11 @@
+import clothes from '../test_data/test_clothes';
 import client from './client';
 
 // FILTER AND FETCH
 
 export const getFilteredClothes = async (filters) => {
+    return clothes;
+
     try {
         const response = await client.get('/clothes/get-filtered', {
             params: filters,
@@ -15,6 +18,8 @@ export const getFilteredClothes = async (filters) => {
 };
 
 export const getMatches = async (userId) => {
+    return clothes;
+
     try {
         const response = await client.get('/clothes/get-matches', {
             params: { userId },

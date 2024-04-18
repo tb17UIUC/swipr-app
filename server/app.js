@@ -1,22 +1,21 @@
+require('dotenv').config();
+
+// Import dependencies
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-require('dotenv').config();
-
 const mysql = require('mysql2/promise');
 const { Connector } = require('@google-cloud/cloud-sql-connector');
-const { GoogleAuth } = require('google-auth-library');
 
-const connector = new Connector();
-
-const projectId = process.env.DB_PROCESS_ID;
-
-const testFunc = async () => {
+async function initializeApp() {
+    // Setup Google Cloud SQL Connector
+    const connector = new Connector();
     const clientOpts = await connector.getOptions({
         instanceConnectionName: process.env.DB_CONNECTION_NAME,
         ipType: 'PUBLIC',
     });
 
+    // Create a MySQL pool
     const pool = await mysql.createPool({
         ...clientOpts,
         user: process.env.DB_USER,
@@ -24,14 +23,54 @@ const testFunc = async () => {
         database: process.env.DB_NAME,
     });
 
-    const conn = await pool.getConnection();
-    const [rows] = await conn.query(
-        'SELECT c.Clothing_Id FROM Clothes c LIMIT 15'
-    );
-    console.table(rows);
-    await pool.end(); // Close the pool to release resources
-    connector.close();
-};
+    // Helper function to get pool connection
+    const getPoolConnection = async () => {
+        return pool.getConnection();
+    };
+
+    // Create Express application
+    const app = express();
+    const PORT = process.env.PORT || 3000;
+
+    // Middleware
+    app.use(bodyParser.json());
+    app.use(cors());
+
+    // Import and use routes
+    const routes = require('./routes/router')(getPoolConnection);
+    app.use(routes);
+
+    // Start server
+    app.listen(PORT, () => {
+        console.log(`Server is running on port ${PORT}`);
+    });
+}
+
+// Call the async function to initialize and start the server
+initializeApp().catch((error) => {
+    console.error('Failed to initialize the app:', error);
+    process.exit(1); // Exit the process in case of initialization failure
+});
+
+// const conn = await pool.getConnection();
+// const [rows] = await conn.query(
+//     'SELECT c.Clothing_Id FROM Clothes c LIMIT 15'
+// );
+// console.table(rows);
+// await pool.end(); // Close the pool to release resources
+// connector.close();
+
+// const testFunc = async () => {
+//     const conn = await pool.getConnection();
+//     const [rows] = await conn.query(
+//         'SELECT c.Clothing_Id FROM Clothes c LIMIT 15'
+//     );
+//     console.table(rows);
+//     await pool.end(); // Close the pool to release resources
+//     connector.close();
+// };
+
+// testFunc();
 
 // console.log(rows);
 
@@ -56,19 +95,6 @@ const testFunc = async () => {
 //     }
 //     console.log('Connected to the database.');
 // });
-
-const app = express();
-const PORT = process.env.PORT;
-
-const routes = require('./routes/router');
-
-app.use(bodyParser.json());
-app.use(cors());
-app.use(routes);
-
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
 
 // const testfunc = async () => {
 //     const clientOpts = await connector.getOptions({
@@ -95,5 +121,3 @@ app.listen(PORT, () => {
 //         connector.close(); // Close the Cloud SQL Connector
 //     }
 // };
-
-testFunc();
