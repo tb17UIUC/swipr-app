@@ -4,6 +4,7 @@ import { HeartIcon, HandThumbDownIcon } from '@heroicons/react/24/solid';
 import { postOpinion } from '../api/Opinions';
 import FilterPanel from './FilterPanel';
 import { MenuIcon } from '@heroicons/react/24/solid';
+import Navbar from './Navbar';
 
 export default function ClothesScreen({ clothingItemList, userId }) {
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -32,26 +33,30 @@ export default function ClothesScreen({ clothingItemList, userId }) {
     };
 
     return (
-        <div className="relative flex flex-row items-center justify-center h-full">
-            {/* Navigation buttons with Heroicons */}
-            <button
-                onClick={() => handleSwipe('l')}
-                className="bg-primary hover:bg-tertiary rounded-full p-5 shadow-lg mr-4"
-            >
-                <HandThumbDownIcon className="h-6 w-6 text-white" />
-            </button>
-            <div className="bg-gray-200">
-                {clothingItems.length > 0 &&
-                    currentIndex < clothingItems.length && (
-                        <ClothingCard clothing={clothingItems[currentIndex]} />
-                    )}
+        <div className="flex flex-col items-center justify-center h-screen">
+            <Navbar />
+            <div className="container  w-5/12 flex flex-row items-center justify-center h-full mt-2 mb-2">
+                <button
+                    onClick={() => handleSwipe('l')}
+                    className="bg-primary hover:bg-tertiary rounded-full p-5 shadow-lg mr-4"
+                >
+                    <HandThumbDownIcon className="h-6 w-6 text-white" />
+                </button>
+                <div className="h-full w-full">
+                    {clothingItems.length > 0 &&
+                        currentIndex < clothingItems.length && (
+                            <ClothingCard
+                                clothing={clothingItems[currentIndex]}
+                            />
+                        )}
+                </div>
+                <button
+                    onClick={() => handleSwipe('d')}
+                    className="bg-primary hover:bg-tertiary rounded-full p-5 shadow-lg ml-4"
+                >
+                    <HeartIcon className="h-6 w-6 text-white" />
+                </button>
             </div>
-            <button
-                onClick={() => handleSwipe('d')}
-                className="bg-primary hover:bg-tertiary rounded-full p-5 shadow-lg ml-4"
-            >
-                <HeartIcon className="h-6 w-6 text-white" />
-            </button>
         </div>
     );
 }

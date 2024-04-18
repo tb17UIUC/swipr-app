@@ -2,7 +2,7 @@ import React from 'react';
 
 export default function Navbar() {
     return (
-        <nav className="bg-primary p-4">
+        <nav className="bg-primary p-4 w-full">
             <div className="flex items-center justify-between">
                 <div className="flex items-center">
                     {/* Logo */}
