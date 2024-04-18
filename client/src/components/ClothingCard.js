@@ -7,7 +7,7 @@ const ClothingCard = ({ clothing }) => {
     };
 
     return (
-        <div className="max-w-xs w-96 h-150 rounded shadow-lg my-2">
+        <div className="max-w-xs w-96 h-full rounded shadow-lg my-2">
             <div className="overflow-hidden w-full h-3/4 object-cover">
                 <img
                     src={clothing.Image}

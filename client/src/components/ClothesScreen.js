@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import ClothingCard from './ClothingCard'; // Ensure the component is correctly imported
 import { HeartIcon, HandThumbDownIcon } from '@heroicons/react/24/solid';
+import { postOpinion } from '../api/Opinions';
+import FilterPanel from './FilterPanel';
+import { MenuIcon } from '@heroicons/react/24/solid';
 
-export default function ClothesScreen({ clothingItemList }) {
+export default function ClothesScreen({ clothingItemList, userId }) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [clothingItems, setClothingItems] = useState([]);
+    const [filterPanelVisible, setFilterPanelVisible] = useState(false);
 
     useEffect(() => {
         setClothingItems(clothingItemList); // Simplified use of state
@@ -28,7 +32,7 @@ export default function ClothesScreen({ clothingItemList }) {
     };
 
     return (
-        <div className="relative flex flex-row items-center justify-center">
+        <div className="relative flex flex-row items-center justify-center h-full">
             {/* Navigation buttons with Heroicons */}
             <button
                 onClick={() => handleSwipe('l')}

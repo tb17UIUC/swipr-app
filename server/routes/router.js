@@ -5,7 +5,9 @@ const bodyParser = require('body-parser');
 router.use(bodyParser.json());
 
 const getClothes = require('../controllers/get');
+const postOpinion = require('../controllers/post');
 
-router.get('/api/get-clothes', getClothes);
+router.get('/api/clothes/get', getClothes);
+router.post('/api/opinion/create', bodyParser.json(), postOpinion);
 
 module.exports = router;
