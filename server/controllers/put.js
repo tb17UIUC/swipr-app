@@ -29,11 +29,10 @@ module.exports = function (getPoolConnection) {
             const connection = await getPoolConnection();
             await connection.query(query, values);
             res.status(200).send('Customer updated successfully');
+            connection.release();
         } catch (error) {
             console.error('Error updating customer:', error);
             res.status(500).send('Error updating customer');
-        } finally {
-            connection.release();
         }
     };
 

@@ -5,11 +5,10 @@ module.exports = function (getPoolConnection) {
             let query = 'SELECT * FROM Clothes'; // Sample query
             const [results] = await connection.query(query);
             res.json(results);
+            connection.release();
         } catch (error) {
             console.error('Failed to retrieve clothes:', error);
             res.status(500).send('Failed to retrieve clothes');
-        } finally {
-            connection.release();
         }
     };
 
@@ -19,11 +18,10 @@ module.exports = function (getPoolConnection) {
             let query = 'SELECT * FROM Clothes'; // Sample query
             const [results] = await connection.query(query);
             res.json(results);
+            connection.release();
         } catch (error) {
             console.error('Failed to retrieve matches:', error);
             res.status(500).send('Failed to retrieve matches');
-        } finally {
-            connection.release();
         }
     };
 

@@ -9,11 +9,10 @@ module.exports = function (getPoolConnection) {
             const connection = await getPoolConnection();
             await connection.query(query, values);
             res.status(201).send('Opinion added');
+            connection.release();
         } catch (error) {
             console.error('Error posting opinion:', error);
             res.status(500).send('Error posting opinion');
-        } finally {
-            connection.release();
         }
     };
 
@@ -46,11 +45,10 @@ module.exports = function (getPoolConnection) {
             const connection = await getPoolConnection();
             await connection.query(query, values);
             res.status(201).send('Customer added to database');
+            connection.release();
         } catch (error) {
             console.error('Error posting customer:', error);
             res.status(500).send('Error posting customer');
-        } finally {
-            connection.release();
         }
     };
 
