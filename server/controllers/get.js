@@ -14,8 +14,11 @@ module.exports = function (getPoolConnection) {
 
     const getMatches = async (req, res) => {
         try {
+            const { userId } = req.query;
+            // console.log(userId, typeof userId);
             const connection = await getPoolConnection();
-            let query = 'SELECT * FROM Clothes'; // Sample query
+            let query = `SELECT C.Clothing_Id, C.Name, C.Clothing_Color, C.Brand, C.Type, C.Price, C.Image, C.URL FROM Matches M JOIN Clothes C ON C.Clothing_Color = M.Color_Name WHERE M.Customer_Id = ${userId} LIMIT 200`;
+            // console.log(query);
             const [results] = await connection.query(query);
             res.json(results);
             connection.release();
@@ -26,8 +29,47 @@ module.exports = function (getPoolConnection) {
     };
 
     const getFilterInfo = async (req, res) => {
-        console.log('get filter info handled');
-        res.send('Filter info');
+        try {
+            const connection = await getPoolConnection();
+            let query =
+                'SELECT University_Id, University_Name FROM Universities';
+            const [universityResults] = await connection.query(query);
+            connection.release();
+
+            const connection1 = await getPoolConnection();
+            let query1 = 'SELECT Brand_Name FROM Brands';
+            const [brandResults] = await connection1.query(query1);
+            connection1.release();
+
+            const connection2 = await getPoolConnection();
+            let query2 = 'SELECT MAX(Price) AS maxPrice FROM Clothes';
+            const [maxpriceresults] = await connection1.query(query2);
+            connection2.release();
+
+            const connection3 = await getPoolConnection();
+            let query3 = 'SELECT MIN(Price) AS minPrice FROM Clothes';
+            const [minpriceresults] = await connection1.query(query3);
+            connection3.release();
+
+            res.json({
+                universities: universityResults,
+                brands: brandResults,
+                maxPrice: maxpriceresults,
+                minPrice: minpriceresults,
+            });
+
+            // console.log({
+            //     universities: universityResults,
+            //     brands: brandResults,
+            //     maxPrice: maxpriceresults,
+            //     minPrice: minpriceresults,
+            // });
+            const connection4 = await getPoolConnection();
+            connection4.release();
+        } catch (error) {
+            console.error('Error in getFilterInfo:', error);
+            res.status(500).json({ error: 'Internal server error' });
+        }
     };
 
     return {

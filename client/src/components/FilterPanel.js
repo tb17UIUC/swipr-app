@@ -1,18 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Select from 'react-select';
-import Slider from 'react-slider';
-import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/solid';
+import { Slider } from '@mui/material';
+// import ReactSlider from 'react-slider';
+import { XCircleIcon } from '@heroicons/react/24/solid';
 
 export default function FilterPanel({
     setFilters,
+    userId,
     brands,
     universities,
     minPrice,
     maxPrice,
+    closePanel,
 }) {
+    console.log(brands);
     const [localFilters, setLocalFilters] = useState({
-        brand: [],
-        university: '',
+        userId: userId,
+        brands: [],
+        universities: [],
         priceRange: [minPrice, maxPrice],
         type: [],
         stars: 1,
@@ -20,12 +25,27 @@ export default function FilterPanel({
 
     const handleApplyFilters = () => {
         setFilters(localFilters);
+        closePanel(); // Call this function when filters are set
+    };
+
+    const handlePriceChange = (event, newValue) => {
+        setLocalFilters((prev) => ({
+            ...prev,
+            priceRange: newValue,
+        }));
+    };
+
+    const handleStarChange = (event, newValue) => {
+        setLocalFilters((prev) => ({
+            ...prev,
+            stars: newValue,
+        }));
     };
 
     return (
-        <div className="fixed right-0 top-0 h-full bg-white shadow-lg w-96 p-4 transform transition-transform translate-x-full">
-            <button className="text-right">
-                <AdjustmentsHorizontalIcon className="h-6 w-6" />
+        <div className="m-2">
+            <button className="text-right" onClick={() => closePanel()}>
+                <XCircleIcon className="h-6 w-6" />
             </button>
             <div className="my-4">
                 <label>Brand</label>
@@ -48,20 +68,17 @@ export default function FilterPanel({
             <div className="my-4">
                 <label>Universities</label>
                 <Select
+                    isMulti
                     options={universities.map((university) => ({
-                        value: university,
-                        label: university,
+                        value: university, // Here you store the full object
+                        label: university.University_Name, // Display the name only
                     }))}
-                    onInputChange={(inputValue) =>
+                    onChange={(selectedOptions) =>
                         setLocalFilters((prev) => ({
                             ...prev,
-                            university: inputValue,
-                        }))
-                    }
-                    onChange={(selectedOption) =>
-                        setLocalFilters((prev) => ({
-                            ...prev,
-                            university: selectedOption.value,
+                            universities: selectedOptions.map(
+                                (option) => option.value.University_Id
+                            ),
                         }))
                     }
                 />
@@ -69,20 +86,15 @@ export default function FilterPanel({
             <div className="my-4">
                 <label>Price Range</label>
                 <Slider
+                    value={localFilters.priceRange}
+                    onChange={handlePriceChange}
+                    valueLabelDisplay="auto"
                     min={minPrice}
                     max={maxPrice}
-                    value={localFilters.priceRange}
-                    onChange={(value) =>
-                        setLocalFilters((prev) => ({
-                            ...prev,
-                            priceRange: value,
-                        }))
-                    }
-                    withTracks
                 />
-                <div className="flex justify-between text-xs">
-                    <span>${localFilters.priceRange[0]}</span>
-                    <span>${localFilters.priceRange[1]}</span>
+                <div className="flex justify-between text-s">
+                    <span>${minPrice}</span>
+                    <span>${maxPrice}</span>
                 </div>
             </div>
             <div className="my-4">
@@ -90,9 +102,9 @@ export default function FilterPanel({
                 <Select
                     isMulti
                     options={[
-                        { value: 'tops', label: 'Tops' },
-                        { value: 'bottoms', label: 'Bottoms' },
-                        { value: 'outerwear', label: 'Outerwear' },
+                        { value: 'Tops', label: 'Tops' },
+                        { value: 'Bottoms', label: 'Bottoms' },
+                        { value: 'Outerwear', label: 'Outerwear' },
                     ]}
                     onChange={(selectedOptions) =>
                         setLocalFilters((prev) => ({
@@ -103,20 +115,18 @@ export default function FilterPanel({
                 />
             </div>
             <div className="my-4">
-                <label>Stars</label>
+                <label>Minimum Star Rating</label>
                 <Slider
+                    value={localFilters.stars}
+                    onChange={handleStarChange}
+                    valueLabelDisplay="auto"
                     min={1}
                     max={5}
-                    value={localFilters.stars}
-                    onChange={(value) =>
-                        setLocalFilters((prev) => ({ ...prev, stars: value }))
-                    }
-                    withTracks
+                    step={1}
                 />
-                <div className="text-center">{localFilters.stars} Stars</div>
             </div>
             <button
-                className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-xl mx-auto block"
                 onClick={handleApplyFilters}
             >
                 Set Filters

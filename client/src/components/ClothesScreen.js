@@ -40,7 +40,13 @@ export default function ClothesScreen({ userId }) {
         const fetchFilterInfo = async () => {
             try {
                 const data = await getFilterInfo();
-                setFilterInfo(data);
+                const transformedData = {
+                    ...data,
+                    brands: data.brands.map((brand) => brand.Brand_Name),
+                    maxPrice: data.maxPrice[0].maxPrice,
+                    minPrice: data.minPrice[0].minPrice,
+                };
+                setFilterInfo(transformedData);
             } catch (error) {
                 console.error('Error fetching filter info:', error);
             }
@@ -69,6 +75,7 @@ export default function ClothesScreen({ userId }) {
         };
 
         setIsLoading(true);
+        // console.log(filters);
         fetchClothes();
         setIsLoading(false);
     }, [filters]);
@@ -114,7 +121,7 @@ export default function ClothesScreen({ userId }) {
             {panelState !== 'closed' && (
                 <div
                     className={clsx(
-                        'absolute right-0 w-96 bg-gray-100 shadow-lg top-16 bottom-0 rounded-l-xl',
+                        'absolute right-0 w-96 bg-gray-100 shadow-lg top-16 bottom-0 rounded-l-xl border-2 border-primary',
                         {
                             'filter-panel-entering': panelState === 'opening',
                             'filter-panel-exiting': panelState === 'closing',
@@ -123,10 +130,12 @@ export default function ClothesScreen({ userId }) {
                 >
                     <FilterPanel
                         setFilters={setFilters}
+                        userId={userId}
                         brands={filterInfo.brands}
                         universities={filterInfo.universities}
                         minPrice={filterInfo.minPrice}
                         maxPrice={filterInfo.maxPrice}
+                        closePanel={toggleFilterPanel}
                     />
                 </div>
             )}
