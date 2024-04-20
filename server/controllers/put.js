@@ -1,29 +1,35 @@
 module.exports = function (getPoolConnection) {
-    const updateCustomer = async (req, res) => {
+    const putCustomer = async (req, res) => {
         const {
             firstName,
             lastName,
             email,
             password,
-            userImage,
+            profilePicture,
             universityId,
         } = req.body;
-        // Ensure colorAlgorithm is defined/imported if used here.
-        // const {sc_h, sc_s, sc_v} = colorAlgorithm(userImage);
+        const customerId = req.params.id; // Extracting customerId from URL parameter
 
-        const query =
-            'UPDATE your_table_name SET Email = ?, Pwd = ?, First_Name = ?, Last_Name = ?, Skin_Color_H = ?, Skin_Color_S = ?, Skin_Color_V = ?, University_Id = ? WHERE UserId = ?';
+        const profilePictureBuffer = Buffer.from(profilePicture, 'base64');
+
+        const { sc_h, sc_s, sc_v } = identifySkinTone(profilePictureBuffer);
+
+        const query = `
+        UPDATE Customers
+        SET Email = ?, Pwd = ?, First_Name = ?, Last_Name = ?, Profile_Picture = ?, Skin_Color_H = ?, Skin_Color_S = ?, Skin_Color_V = ?, University_Id = ?
+        WHERE Customer_Id = ?`;
         const values = [
             email,
             password,
             firstName,
             lastName,
+            profilePictureBuffer,
             sc_h,
             sc_s,
             sc_v,
             universityId,
-            userId,
-        ]; // Ensure userId is provided for update operation
+            customerId,
+        ];
 
         try {
             const connection = await getPoolConnection();
@@ -36,5 +42,26 @@ module.exports = function (getPoolConnection) {
         }
     };
 
-    return { updateCustomer };
+    const putOpinion = async (req, res) => {
+        const { customerId, clothingId, opinion } = req.body;
+        const query =
+            'UPDATE opinions SET Opinion_Type = ? WHERE Customer_Id = ? AND Clothing_Id = ?';
+        const values = [opinion, customerId, clothingId];
+
+        try {
+            const connection = await getPoolConnection();
+            const result = await connection.query(query, values);
+            if (result.affectedRows === 0) {
+                res.status(404).send('No opinion found to update');
+            } else {
+                res.status(200).send('Opinion updated successfully');
+            }
+            connection.release();
+        } catch (error) {
+            console.error('Error updating opinion:', error);
+            res.status(500).send('Error updating opinion');
+        }
+    };
+
+    return { putCustomer, putOpinion };
 };

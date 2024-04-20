@@ -5,7 +5,7 @@ export default function WelcomeScreen() {
     let navigate = useNavigate(); // Hook for navigation
 
     function handleClick() {
-        navigate('/clothes'); // Navigate to ClothesScreen
+        navigate('/login'); // Navigate to LoginScreen
     }
 
     return (
@@ -23,7 +23,7 @@ export default function WelcomeScreen() {
                     onClick={handleClick}
                     className="mt-8 bg-white text-primary font-semibold py-2 px-4 rounded-lg shadow"
                 >
-                    Get Started
+                    Sign in
                 </button>
             </div>
         </div>

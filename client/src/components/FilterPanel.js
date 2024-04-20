@@ -81,6 +81,7 @@ export default function FilterPanel({
                             ),
                         }))
                     }
+                    menuPlacement="auto"
                 />
             </div>
             <div className="my-4">
@@ -112,6 +113,7 @@ export default function FilterPanel({
                             type: selectedOptions.map((option) => option.value),
                         }))
                     }
+                    menuPlacement="auto"
                 />
             </div>
             <div className="my-4">

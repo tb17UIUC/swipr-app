@@ -1,8 +1,64 @@
+const shuffleArray = require('../helpers/shuffle');
+
 module.exports = function (getPoolConnection) {
     const getFilteredClothes = async (req, res) => {
+        const { customerId, brand, universities, priceRange, type, stars } =
+            req.query;
+
         try {
             const connection = await getPoolConnection();
-            let query = 'SELECT * FROM Clothes'; // Sample query
+            let query =
+                'SELECT DISTINCT C.* FROM Matches M JOIN Clothes C ON C.Clothing_Color = M.Color_Name LEFT JOIN Reviews R ON R.Clothing_Id = C.Clothing_Id WHERE (1=1';
+            if (customerId) {
+                query += ` AND M.Customer_Id = ${customerId}`;
+            }
+            if (brand) {
+                query += ' AND (';
+                for (let i = 0; i < brand.length; i++) {
+                    let the_brand = brand[i];
+                    if (i == brand.length - 1) {
+                        query += ` C.Brand = '${the_brand}'`;
+                    } else {
+                        query += ` C.Brand = '${the_brand}' OR`;
+                    }
+                }
+                query += ' )';
+            }
+            if (priceRange) {
+                query += ` AND C.Price > ${priceRange[0]} AND C.Price < ${priceRange[1]}`;
+            }
+            if (type) {
+                query += ' AND (';
+                for (let i = 0; i < type.length; i++) {
+                    let the_type = type[i];
+                    if (i == type.length - 1) {
+                        query += ` C.Type = '${the_type}'`;
+                    } else {
+                        query += ` C.Type = '${the_type}' OR`;
+                    }
+                }
+                query += ' )';
+            }
+            query += ')';
+            if (universities) {
+                subquery =
+                    "SELECT O.Clothing_Id FROM Opinions O WHERE O.Opinion_Type = 'L' AND O.Customer_Id IN (SELECT Cc.Customer_Id FROM Customers Cc WHERE";
+                for (let i = 0; i < universities.length; i++) {
+                    let the_uni = universities[i];
+                    if (i == universities.length - 1) {
+                        subquery += ` Cc.University_Id = ${the_uni}`;
+                    } else {
+                        subquery += ` Cc.University_Id = ${the_uni} OR`;
+                    }
+                }
+                subquery += ' )';
+                query += ` OR (C.Clothing_Id IN (${subquery}))`;
+            }
+            if (stars) {
+                query += ` GROUP BY C.Clothing_Id HAVING AVG(R.Star_Rating) > ${stars}`;
+            }
+
+            console.log(query);
             const [results] = await connection.query(query);
             res.json(results);
             connection.release();
@@ -14,12 +70,13 @@ module.exports = function (getPoolConnection) {
 
     const getMatches = async (req, res) => {
         try {
-            const { userId } = req.query;
-            // console.log(userId, typeof userId);
+            const { customerId } = req.query;
+            // console.log(customerId, typeof customerId);
             const connection = await getPoolConnection();
-            let query = `SELECT C.Clothing_Id, C.Name, C.Clothing_Color, C.Brand, C.Type, C.Price, C.Image, C.URL FROM Matches M JOIN Clothes C ON C.Clothing_Color = M.Color_Name WHERE M.Customer_Id = ${userId} LIMIT 200`;
+            let query = `SELECT C.Clothing_Id, C.Name, C.Clothing_Color, C.Brand, C.Type, C.Price, C.Image, C.URL FROM Matches M JOIN Clothes C ON C.Clothing_Color = M.Color_Name WHERE M.Customer_Id = ${customerId.trim()} LIMIT 200`;
             // console.log(query);
             const [results] = await connection.query(query);
+            shuffleArray(results);
             res.json(results);
             connection.release();
         } catch (error) {
@@ -72,16 +129,97 @@ module.exports = function (getPoolConnection) {
         }
     };
 
+    const getCustomerOpinions = async (req, res) => {
+        const customerId = req.params.id;
+
+        try {
+            const connection = await getPoolConnection();
+            let query = `
+                SELECT O.Clothing_Id, C.Name, C.Brand, C.Type, C.Price, C.Image, C.URL, O.Opinion_Type
+                FROM Opinions O
+                JOIN Clothes C ON O.Clothing_Id = C.Clothing_Id
+                WHERE O.Customer_Id = ?
+            `;
+            const [results] = await connection.execute(query, [customerId]);
+            res.json(results);
+            connection.release();
+        } catch (error) {
+            console.error('Failed to retrieve opinions:', error);
+            res.status(500).send('Failed to retrieve opinions');
+        }
+    };
+
+    const getClothingOpinions = async (req, res) => {
+        const clothingId = req.params.id;
+
+        // console.log(clothingId);
+
+        try {
+            const connection = await getPoolConnection();
+            let query = `
+                SELECT 
+                    SUM(CASE WHEN Opinion_Type = 'L' THEN 1 ELSE 0 END) AS like_count,
+                    SUM(CASE WHEN Opinion_Type = 'D' THEN 1 ELSE 0 END) AS dislike_count,
+                    SUM(CASE WHEN Opinion_Type = 'S' THEN 1 ELSE 0 END) AS superlike_count
+                FROM Opinions
+                WHERE Clothing_Id = ?
+            `;
+            const [results] = await connection.execute(query, [clothingId]);
+
+            // console.log(results);
+
+            res.json({
+                like_count: results[0].like_count || 0,
+                dislike_count: results[0].dislike_count || 0,
+                superlike_count: results[0].superlike_count || 0,
+            });
+            connection.release();
+        } catch (error) {
+            console.error('Failed to retrieve clothing opinions:', error);
+            res.status(500).send('Failed to retrieve clothing opinions');
+        }
+    };
+
+    const getCustomerInfo = async (req, res) => {
+        const customerId = req.params.id;
+
+        const query = `
+        SELECT Customer_Id, Email, First_Name, Last_Name, University_Id, TO_BASE64(Profile_Picture) as Profile_Picture
+        FROM Customers
+        WHERE Customer_Id = ?
+    `;
+
+        try {
+            const connection = await getPoolConnection();
+            const [result] = await connection.query(query, [customerId]);
+
+            if (result.length > 0) {
+                const customerInfo = result[0];
+                res.status(200).send(customerInfo);
+            } else {
+                res.status(404).send({ message: 'Customer not found' });
+            }
+
+            connection.release();
+        } catch (error) {
+            console.error('Error fetching customer info:', error);
+            res.status(500).send('Error fetching customer info');
+        }
+    };
+
     return {
         getFilteredClothes,
         getMatches,
         getFilterInfo,
+        getCustomerOpinions,
+        getClothingOpinions,
+        getCustomerInfo,
     };
 };
 
 // module.exports = function (getPoolConnection) {
 //     const getFilteredClothes = async (req, res) => {
-//         const { universityId, price, brand, type, stars, userId } = req.query;
+//         const { universityId, price, brand, type, stars, customerId } = req.query;
 
 //         let query = 'SELECT * FROM Clothes';
 //         // if (universityId)
@@ -90,7 +228,7 @@ module.exports = function (getPoolConnection) {
 //         // if (brand) query += ` AND brand = ${mysql.escape(brand)}`;
 //         // if (type) query += ` AND type = ${mysql.escape(type)}`;
 //         // if (stars) query += ` AND stars >= ${mysql.escape(stars)}`;
-//         // if (userId) query += ` AND userId = ${mysql.escape(userId)}`;
+//         // if (customerId) query += ` AND customerId = ${mysql.escape(customerId)}`;
 
 //         try {
 //             const pool = await sqlInit(); // Get the pool
@@ -106,17 +244,17 @@ module.exports = function (getPoolConnection) {
 //     };
 
 //     const getMatches = async (req, res) => {
-//         const { userId } = req.query;
+//         const { customerId } = req.query;
 
-//         // console.log(userId);
+//         // console.log(customerId);
 
 //         // PULL ALL MATCHING COLORS FOR USER ID
 
 //         // GET ALL OF CLOTHES OF THOSE MATCHING COLORS AND RETURN CLOTHES
 
 //         // SAMPLE QUERY
-//         // const query = `SELECT * FROM clothes WHERE userId = ${mysql.escape(
-//         //     userId
+//         // const query = `SELECT * FROM clothes WHERE customerId = ${mysql.escape(
+//         //     customerId
 //         // )}`;
 
 //         let query = 'SELECT * FROM Clothes';
@@ -141,8 +279,8 @@ module.exports = function (getPoolConnection) {
 
 //     const getFilterInfo = async (req, res) => {
 //         // SAMPLE QUERY
-//         // const query = `SELECT * FROM clothes WHERE userId = ${mysql.escape(
-//         //     userId
+//         // const query = `SELECT * FROM clothes WHERE customerId = ${mysql.escape(
+//         //     customerId
 //         // )}`;
 
 //         // connection.query(query, (error, results) => {

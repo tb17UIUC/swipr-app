@@ -4,7 +4,7 @@ const client = axios.create({ baseURL: 'http://localhost:4029/api/' });
 const getMatchesTest = async () => {
     try {
         const response = await client.get('/clothes/get-matches', {
-            params: { userId: 1 },
+            params: { customerId: 1 },
         });
         console.log(response.data); // Logging the response data // console.log('hello'); // return response.data;
     } catch (error) {

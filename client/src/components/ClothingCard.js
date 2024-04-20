@@ -1,6 +1,35 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { fetchClothingOpinions } from '../api/Opinions';
+import {
+    HandThumbUpIcon,
+    HandThumbDownIcon,
+    HeartIcon,
+} from '@heroicons/react/24/solid';
 
 const ClothingCard = ({ clothing }) => {
+    const [opinions, setOpinions] = useState({
+        like_count: 0,
+        dislike_count: 0,
+        superlike_count: 0,
+    });
+
+    useEffect(() => {
+        const fetchOpinionsForItem = async () => {
+            if (clothing && clothing.Clothing_Id) {
+                try {
+                    const response = await fetchClothingOpinions(
+                        clothing.Clothing_Id
+                    );
+                    setOpinions(response); // Set the state with the fetched data
+                } catch (error) {
+                    console.error('Error fetching opinions:', error);
+                }
+            }
+        };
+
+        fetchOpinionsForItem(); // Call the async function
+    }, [clothing]);
+
     const handleImageError = (e) => {
         e.target.onerror = null; // Prevents looping
         e.target.src = require('../assets/not-found.jpeg');
@@ -18,15 +47,31 @@ const ClothingCard = ({ clothing }) => {
             </div>
             {/* Image scaling */}
             <div className="grow bg-primary text-white rounded-b-xl">
-                <div className="font-bold text-xl mb-2 ml-2 mt-2">
-                    {clothing.Name}
+                <div className="font-bold text-xl mb-2 ml-2 mt-2 underline">
+                    <a
+                        href={clothing.URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        {clothing.Name}
+                    </a>
                 </div>
                 <p className="text-base ml-2">
                     <span className="text-tertiary text-sm ">
                         {clothing.Brand}
                     </span>
                 </p>
-                <p className="text-xl ml-2">${clothing.Price.toFixed(2)}</p>
+                <div className="flex justify-between items-center ml-2 mr-2">
+                    <p className="text-xl">${clothing.Price.toFixed(2)}</p>
+                    <div className="flex items-center">
+                        <HandThumbUpIcon className="h-5 w-5 text-white" />{' '}
+                        <span>{opinions.like_count}</span>
+                        <HandThumbDownIcon className="h-5 w-5 text-white ml-3" />{' '}
+                        <span>{opinions.dislike_count}</span>
+                        <HeartIcon className="h-5 w-5 text-white ml-3" />{' '}
+                        <span>{opinions.superlike_count}</span>
+                    </div>
+                </div>
             </div>
         </div>
     );
