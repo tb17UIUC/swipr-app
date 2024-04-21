@@ -1,4 +1,4 @@
-import identifySkinTone from '../helpers/skinTone';
+// import identifySkinTone from '../helpers/skinTone';
 
 module.exports = function (getPoolConnection) {
     const postOpinion = async (req, res) => {
@@ -31,14 +31,14 @@ module.exports = function (getPoolConnection) {
         const profilePictureBuffer = Buffer.from(profilePicture, 'base64');
 
         // implement identifyskintone
-        const { sc_h, sc_s, sc_v, matchingColors } =
-            identifySkinTone(profilePictureBuffer);
+        // const { sc_h, sc_s, sc_v, matchingColors } =
+        //     identifySkinTone(profilePictureBuffer);
 
-        // const sc_h = 0; // Assuming skin color values are determined elsewhere
-        // const sc_s = 0;
-        // const sc_v = 0;
-        // const matchingColors =
-        //     'air_force_blue_raf,air_force_blue_usaf,air_superiority_blue,alabama_crimson,alice_blue,alizarin_crimson,alloy_orange,almond,amaranth,amber,amber_sae_ece,american_rose,amethyst,android_green,antique_brass,antique_fuchsia,antique_ruby,antique_white,anti_flash_white,ao_english';
+        const sc_h = 0; // Assuming skin color values are determined elsewhere
+        const sc_s = 0;
+        const sc_v = 0;
+        const matchingColors =
+            'air_force_blue_raf,air_force_blue_usaf,air_superiority_blue,alabama_crimson,alice_blue,alizarin_crimson,alloy_orange,almond,amaranth,amber,amber_sae_ece,american_rose,amethyst,android_green,antique_brass,antique_fuchsia,antique_ruby,antique_white,anti_flash_white,ao_english';
 
         const callProcedure = 'CALL RegisterUser(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
         const params = [

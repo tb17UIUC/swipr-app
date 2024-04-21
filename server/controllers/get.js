@@ -2,8 +2,12 @@ const shuffleArray = require('../helpers/shuffle');
 
 module.exports = function (getPoolConnection) {
     const getFilteredClothes = async (req, res) => {
-        const { customerId, brand, universities, priceRange, type, stars } =
+        const { customerId, brands, universities, priceRange, type, stars } =
             req.query;
+
+        // console.log('ewbjibourebqoiebqorboigb');
+        // console.log(customerId, brands, universities, priceRange, type, stars);
+        // console.log(req.query);
 
         let params = [];
         let conditions = ['(1=1'];
@@ -16,11 +20,11 @@ module.exports = function (getPoolConnection) {
                 params.push(customerId);
             }
 
-            if (brand && brand.length) {
+            if (brands && brands.length) {
                 conditions.push(
-                    `C.Brand IN (${brand.map(() => '?').join(', ')})`
+                    `C.Brand IN (${brands.map(() => '?').join(', ')})`
                 );
-                params.push(...brand);
+                params.push(...brands);
             }
 
             if (priceRange) {

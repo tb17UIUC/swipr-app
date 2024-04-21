@@ -4,10 +4,10 @@ import client from './client';
 // FILTER AND FETCH
 
 export const getFilteredClothes = async (filters) => {
-    console.log(filters);
+    // console.log(filters);
 
     try {
-        const response = await client.get('/clothes/get-matches', {
+        const response = await client.get('/clothes/get-filtered', {
             params: filters,
         });
         // console.log(response.data); // Logging the response data

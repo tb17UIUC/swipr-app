@@ -42,7 +42,7 @@ export default function FilterPanel({
     };
 
     return (
-        <div className="m-2">
+        <div className="m-4">
             <button className="text-right" onClick={() => closePanel()}>
                 <XCircleIcon className="h-6 w-6" />
             </button>
@@ -57,7 +57,7 @@ export default function FilterPanel({
                     onChange={(selectedOptions) =>
                         setLocalFilters((prev) => ({
                             ...prev,
-                            brand: selectedOptions.map(
+                            brands: selectedOptions.map(
                                 (option) => option.value
                             ),
                         }))

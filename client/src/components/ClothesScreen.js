@@ -134,7 +134,7 @@ export default function ClothesScreen() {
             {panelState !== 'closed' && (
                 <div
                     className={clsx(
-                        'absolute right-0 w-96 bg-gray-100 shadow-lg top-20 bottom-2 rounded-l-xl border-2 border-primary',
+                        'absolute right-0 w-96 bg-gray-100 shadow-lg top-20 bottom-2 rounded-l-xl border-2 border-primary overflow-auto',
                         {
                             'filter-panel-entering': panelState === 'opening',
                             'filter-panel-exiting': panelState === 'closing',

@@ -38,7 +38,7 @@ export default function RegistrationScreen() {
                 setLoading(true);
                 const data = await getFilterInfo(); // Assuming getFilterInfo returns universities
                 setUniversities(
-                    data.universities.map((uni) => ({
+                    data.universities?.map((uni) => ({
                         value: uni.University_Id,
                         label: uni.University_Name,
                     }))
@@ -134,6 +134,7 @@ export default function RegistrationScreen() {
                                     setUniversityId(selectedOption.value)
                                 }
                                 className="text-black"
+                                menuPlacement="auto"
                             />
                         </div>
                     )}
