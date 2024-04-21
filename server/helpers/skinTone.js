@@ -202,3 +202,5 @@ identifySkinTone(imagePath, cropX, cropY, cropWidth, cropHeight)
     .catch((error) => {
         console.error('Error:', error);
     });
+
+module.exports = identifySkinTone;

@@ -6,16 +6,15 @@ import { XCircleIcon } from '@heroicons/react/24/solid';
 
 export default function FilterPanel({
     setFilters,
-    userId,
+    customerId,
     brands,
     universities,
     minPrice,
     maxPrice,
     closePanel,
 }) {
-    console.log(brands);
     const [localFilters, setLocalFilters] = useState({
-        userId: userId,
+        customerId: customerId,
         brands: [],
         universities: [],
         priceRange: [minPrice, maxPrice],

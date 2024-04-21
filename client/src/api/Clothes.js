@@ -4,6 +4,8 @@ import client from './client';
 // FILTER AND FETCH
 
 export const getFilteredClothes = async (filters) => {
+    console.log(filters);
+
     try {
         const response = await client.get('/clothes/get-matches', {
             params: filters,

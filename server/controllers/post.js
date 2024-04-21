@@ -1,8 +1,10 @@
+import identifySkinTone from '../helpers/skinTone';
+
 module.exports = function (getPoolConnection) {
     const postOpinion = async (req, res) => {
         const { customerId, clothingId, opinionType } = req.body;
-        const query =
-            'INSERT INTO Opinions (Customer_Id, Clothing_Id, Opinion_Type) VALUES (?, ?, ?)';
+        const query = `
+        INSERT INTO Opinions (Customer_Id, Clothing_Id, Opinion_Type) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE Opinion_Type = VALUES(Opinion_Type);`;
         const values = [customerId, clothingId, opinionType];
 
         try {
@@ -26,53 +28,50 @@ module.exports = function (getPoolConnection) {
             universityId,
         } = req.body;
 
-        // const customerData = {
-        //     firstName: firstName,
-        //     lastName: lastName,
-        //     email: email,
-        //     password: password,
-        //     profilePicture: profilePicture,
-        //     universityId: universityId,
-        // };
-
         const profilePictureBuffer = Buffer.from(profilePicture, 'base64');
 
-        // You might need to define pullSkinColor or ensure it's imported if used here.
-        // const { sc_h, sc_s, sc_v } = identifySkinTone(profilePicture); // This is not defined yet so we are using 000 for testing
-        const sc_h = 0;
-        const sc_s = 0;
-        const sc_v = 0;
+        // implement identifyskintone
+        const { sc_h, sc_s, sc_v, matchingColors } =
+            identifySkinTone(profilePictureBuffer);
 
-        const query =
-            'INSERT INTO Customers (Email, Pwd, First_Name, Last_Name, Profile_Picture, Skin_Color_H, Skin_Color_S, Skin_Color_V, University_Id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-        const values = [
+        // const sc_h = 0; // Assuming skin color values are determined elsewhere
+        // const sc_s = 0;
+        // const sc_v = 0;
+        // const matchingColors =
+        //     'air_force_blue_raf,air_force_blue_usaf,air_superiority_blue,alabama_crimson,alice_blue,alizarin_crimson,alloy_orange,almond,amaranth,amber,amber_sae_ece,american_rose,amethyst,android_green,antique_brass,antique_fuchsia,antique_ruby,antique_white,anti_flash_white,ao_english';
+
+        const callProcedure = 'CALL RegisterUser(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+        const params = [
             email,
             password,
             firstName,
             lastName,
-            profilePictureBuffer,
             sc_h,
             sc_s,
             sc_v,
             universityId,
+            matchingColors,
+            profilePictureBuffer,
         ];
 
         try {
             const connection = await getPoolConnection();
-            const result = await connection.query(query, values);
+            const [results] = await connection.query(callProcedure, params);
 
-            // Here, result.insertId should give you the id of the newly inserted record.
-            const newCustomerId = result.insertId;
+            console.log(results);
+
+            // Assuming the SELECT statement in the stored procedure returns the customer_id
+            const newCustomerId = results[0][0].CustomerId;
 
             res.status(201).send({
-                message: 'Customer added to database',
-                customerId: newCustomerId, // Send back the new Customer_Id
+                message: 'Customer registered successfully',
+                customerId: newCustomerId,
             });
 
             connection.release();
         } catch (error) {
-            console.error('Error posting customer:', error);
-            res.status(500).send('Error posting customer');
+            console.error('Error registering customer:', error);
+            res.status(500).send('Error registering customer');
         }
     };
 

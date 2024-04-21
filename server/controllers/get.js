@@ -5,61 +5,57 @@ module.exports = function (getPoolConnection) {
         const { customerId, brand, universities, priceRange, type, stars } =
             req.query;
 
+        let params = [];
+        let conditions = ['(1=1'];
+
         try {
             const connection = await getPoolConnection();
-            let query =
-                'SELECT DISTINCT C.* FROM Matches M JOIN Clothes C ON C.Clothing_Color = M.Color_Name LEFT JOIN Reviews R ON R.Clothing_Id = C.Clothing_Id WHERE (1=1';
+
             if (customerId) {
-                query += ` AND M.Customer_Id = ${customerId}`;
-            }
-            if (brand) {
-                query += ' AND (';
-                for (let i = 0; i < brand.length; i++) {
-                    let the_brand = brand[i];
-                    if (i == brand.length - 1) {
-                        query += ` C.Brand = '${the_brand}'`;
-                    } else {
-                        query += ` C.Brand = '${the_brand}' OR`;
-                    }
-                }
-                query += ' )';
-            }
-            if (priceRange) {
-                query += ` AND C.Price > ${priceRange[0]} AND C.Price < ${priceRange[1]}`;
-            }
-            if (type) {
-                query += ' AND (';
-                for (let i = 0; i < type.length; i++) {
-                    let the_type = type[i];
-                    if (i == type.length - 1) {
-                        query += ` C.Type = '${the_type}'`;
-                    } else {
-                        query += ` C.Type = '${the_type}' OR`;
-                    }
-                }
-                query += ' )';
-            }
-            query += ')';
-            if (universities) {
-                subquery =
-                    "SELECT O.Clothing_Id FROM Opinions O WHERE O.Opinion_Type = 'L' AND O.Customer_Id IN (SELECT Cc.Customer_Id FROM Customers Cc WHERE";
-                for (let i = 0; i < universities.length; i++) {
-                    let the_uni = universities[i];
-                    if (i == universities.length - 1) {
-                        subquery += ` Cc.University_Id = ${the_uni}`;
-                    } else {
-                        subquery += ` Cc.University_Id = ${the_uni} OR`;
-                    }
-                }
-                subquery += ' )';
-                query += ` OR (C.Clothing_Id IN (${subquery}))`;
-            }
-            if (stars) {
-                query += ` GROUP BY C.Clothing_Id HAVING AVG(R.Star_Rating) > ${stars}`;
+                conditions.push('M.Customer_Id = ?');
+                params.push(customerId);
             }
 
+            if (brand && brand.length) {
+                conditions.push(
+                    `C.Brand IN (${brand.map(() => '?').join(', ')})`
+                );
+                params.push(...brand);
+            }
+
+            if (priceRange) {
+                conditions.push('C.Price > ? AND C.Price < ?');
+                params.push(priceRange[0], priceRange[1]);
+            }
+
+            if (type && type.length) {
+                conditions.push(
+                    `C.Type IN (${type.map(() => '?').join(', ')})`
+                );
+                params.push(...type);
+            }
+
+            if (universities && universities.length) {
+                let subParams = universities.map(() => '?').join(', ');
+                let subquery = `SELECT O.Clothing_Id FROM Opinions O WHERE O.Opinion_Type = 'L' AND O.Customer_Id IN (SELECT Cc.Customer_Id FROM Customers Cc WHERE Cc.University_Id IN (${subParams}))`;
+                conditions.push(`C.Clothing_Id IN (${subquery})`);
+                params.push(...universities);
+            }
+
+            let query = `SELECT DISTINCT C.* FROM Matches M JOIN Clothes C ON C.Clothing_Color = M.Color_Name LEFT JOIN Reviews R ON R.Clothing_Id = C.Clothing_Id WHERE ${conditions.join(
+                ') AND ('
+            )})`;
+
+            if (stars) {
+                query +=
+                    ' GROUP BY C.Clothing_Id HAVING AVG(R.Star_Rating) > ?;';
+                params.push(stars);
+            }
+
+            console.log(params, conditions);
+
             console.log(query);
-            const [results] = await connection.query(query);
+            const [results] = await connection.query(query, params);
             res.json(results);
             connection.release();
         } catch (error) {
