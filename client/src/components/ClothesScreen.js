@@ -13,6 +13,7 @@ import { getFilteredClothes, getMatches } from '../api/Clothes';
 import { getFilterInfo } from '../api/FilterInfo';
 import clsx from 'clsx';
 import { useUser } from '../UserContext';
+import { useSpring, animated } from 'react-spring';
 
 export default function ClothesScreen() {
     const { user } = useUser();
@@ -26,7 +27,7 @@ export default function ClothesScreen() {
 
     const [filterInfo, setFilterInfo] = useState({});
 
-    // console.log(customerId);
+    const [{ x, opacity }, set] = useSpring(() => ({ x: 0, opacity: 1 }));
 
     const [panelState, setPanelState] = useState('closed');
 
@@ -87,29 +88,32 @@ export default function ClothesScreen() {
         setIsLoading(false);
     }, [filters]);
 
-    const handleSwipe = async (opinion) => {
-        if (clothingItems?.length > 0 && currentIndex < clothingItems?.length) {
+    const handleSwipe = async (direction) => {
+        if (currentIndex < clothingItems.length) {
             const currentClothingItem = clothingItems[currentIndex];
-
             if (currentClothingItem) {
                 await postOpinion({
                     customerId: customerId,
                     clothingId: currentClothingItem.Clothing_Id,
-                    opinionType: opinion === 'l' ? 'L' : 'D',
+                    opinionType: direction === 'left' ? 'D' : 'L',
                 });
             }
 
-            // console.log({
-            //     customerId: customerId,
-            //     clothingId: currentClothingItem.Clothing_Id,
-            //     opinionType: opinion === 'l' ? 'L' : 'D',
-            // });
-
-            if (currentIndex < clothingItems?.length - 1) {
-                setCurrentIndex(currentIndex + 1);
-            } else {
-                console.log('Reached the end of the list');
-            }
+            // Trigger faster animation: move and fade out
+            set({
+                x: direction === 'left' ? -1000 : 1000,
+                opacity: 0,
+                immediate: false,
+                config: { duration: 200 }, // Faster animation
+                onRest: () => {
+                    if (currentIndex < clothingItems.length - 1) {
+                        setCurrentIndex(currentIndex + 1);
+                        set({ x: 0, opacity: 1, immediate: true });
+                    } else {
+                        console.log('Reached the end of the list');
+                    }
+                },
+            });
         }
     };
 
@@ -154,21 +158,21 @@ export default function ClothesScreen() {
             )}
             <div className="container w-5/12 flex flex-row items-center justify-center h-full mt-2 mb-2">
                 <button
-                    onClick={() => handleSwipe('d')}
+                    onClick={() => handleSwipe('left')}
                     className="bg-primary hover:bg-tertiary rounded-full p-5 shadow-lg mr-4"
                 >
                     <HandThumbDownIcon className="h-6 w-6 text-white" />
                 </button>
-                <div className="h-full w-full">
-                    {clothingItems?.length > 0 &&
-                        currentIndex < clothingItems?.length && (
+                <animated.div style={{ x, opacity }} className="h-full w-full">
+                    {clothingItems.length > 0 &&
+                        currentIndex < clothingItems.length && (
                             <ClothingCard
                                 clothing={clothingItems[currentIndex]}
                             />
                         )}
-                </div>
+                </animated.div>
                 <button
-                    onClick={() => handleSwipe('l')}
+                    onClick={() => handleSwipe('right')}
                     className="bg-primary hover:bg-tertiary rounded-full p-5 shadow-lg ml-4"
                 >
                     <HeartIcon className="h-6 w-6 text-white" />
