@@ -37,22 +37,26 @@ module.exports = function (getPoolConnection) {
         getMatches,
         getFilterInfo,
         getClothingOpinions,
-        getCustomerOpinions,
+        getCustomerActions,
         getCustomerInfo,
     } = require('../controllers/get')(getPoolConnection);
-    const { postOpinion, postCustomer, loginCustomer } =
-        require('../controllers/post')(getPoolConnection);
+    const {
+        postOpinion,
+        postCustomer,
+        loginCustomer,
+        postPurchase,
+        postReview,
+    } = require('../controllers/post')(getPoolConnection);
     const { putCustomer, putOpinion } =
         require('../controllers/put')(getPoolConnection);
-    const { deleteOpinion } = require('../controllers/delete')(
-        getPoolConnection
-    );
+    const { deleteOpinion, deletePurchase, deleteReview } =
+        require('../controllers/delete')(getPoolConnection);
 
     router.get('/api/clothes/get-filtered', getFilteredClothes);
     router.get('/api/clothes/get-matches', getMatches);
 
     router.post('/api/opinions/create', bodyParser.json(), postOpinion);
-    router.get('/api/opinions/get-customer-opinions/:id', getCustomerOpinions);
+    router.get('/api/opinions/get-customer-opinions/:id', getCustomerActions);
     router.get('/api/opinions/get-clothing-opinions/:id', getClothingOpinions);
     router.put('/api/opinions/update', bodyParser.json(), putOpinion);
     router.delete('/api/opinions/delete', bodyParser.json(), deleteOpinion);
@@ -61,6 +65,12 @@ module.exports = function (getPoolConnection) {
     router.get('/api/customer/info/:id', getCustomerInfo);
     router.post('/api/customer/login', bodyParser.json(), loginCustomer);
     router.put('/api/customer/update/:id', bodyParser.json(), putCustomer);
+
+    router.post('/api/purchases/create', bodyParser.json(), postPurchase);
+    router.delete('/api/purchases/delete', bodyParser.json(), deletePurchase);
+
+    router.post('/api/reviews/create/', bodyParser.json(), postReview);
+    router.delete('/api/reviews/delete', bodyParser.json(), deleteReview);
 
     router.get('/api/filters/get-info', getFilterInfo);
 

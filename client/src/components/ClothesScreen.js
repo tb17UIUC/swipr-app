@@ -99,11 +99,11 @@ export default function ClothesScreen() {
                 });
             }
 
-            console.log({
-                customerId: customerId,
-                clothingId: currentClothingItem.Clothing_Id,
-                opinionType: opinion === 'l' ? 'L' : 'D',
-            });
+            // console.log({
+            //     customerId: customerId,
+            //     clothingId: currentClothingItem.Clothing_Id,
+            //     opinionType: opinion === 'l' ? 'L' : 'D',
+            // });
 
             if (currentIndex < clothingItems?.length - 1) {
                 setCurrentIndex(currentIndex + 1);

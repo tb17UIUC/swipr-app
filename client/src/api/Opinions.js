@@ -27,7 +27,7 @@ export const updateOpinion = async (opinionInfo) => {
     }
 };
 
-export const fetchCustomerOpinions = async (customerId) => {
+export const fetchCustomerActions = async (customerId) => {
     try {
         const response = await client.get(
             `/opinions/get-customer-opinions/${customerId}`

@@ -129,17 +129,27 @@ module.exports = function (getPoolConnection) {
         }
     };
 
-    const getCustomerOpinions = async (req, res) => {
+    const getCustomerActions = async (req, res) => {
         const customerId = req.params.id;
 
         try {
             const connection = await getPoolConnection();
             let query = `
-                SELECT O.Clothing_Id, C.Name, C.Brand, C.Type, C.Price, C.Image, C.URL, O.Opinion_Type
-                FROM Opinions O
-                JOIN Clothes C ON O.Clothing_Id = C.Clothing_Id
-                WHERE O.Customer_Id = ?
-            `;
+            SELECT 
+                O.Clothing_Id, 
+                C.Name, 
+                C.Brand, 
+                C.Type, 
+                C.Price, 
+                C.Image, 
+                C.URL, 
+                O.Opinion_Type,
+                CASE WHEN P.Clothing_Id IS NOT NULL THEN TRUE ELSE FALSE END AS Purchased
+            FROM Opinions O
+            JOIN Clothes C ON O.Clothing_Id = C.Clothing_Id
+            LEFT JOIN Purchases P ON O.Clothing_Id = P.Clothing_Id AND O.Customer_Id = P.Customer_Id
+            WHERE O.Customer_Id = ?
+        `;
             const [results] = await connection.execute(query, [customerId]);
             res.json(results);
             connection.release();
@@ -211,7 +221,7 @@ module.exports = function (getPoolConnection) {
         getFilteredClothes,
         getMatches,
         getFilterInfo,
-        getCustomerOpinions,
+        getCustomerActions,
         getClothingOpinions,
         getCustomerInfo,
     };

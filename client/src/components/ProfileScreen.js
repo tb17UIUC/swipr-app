@@ -8,13 +8,17 @@ import { fetchCustomerInfo } from '../api/Customers';
 import { updateCustomer } from '../api/Customers';
 import Navbar from './Navbar';
 import { TailSpin } from 'react-loading-icons';
-import { fetchCustomerOpinions } from '../api/Opinions';
+import { fetchCustomerActions } from '../api/Opinions';
 import MiniClothingCard from './MiniClothingCard';
-import { deleteOpinion } from '../api/Opinions';
+import { deleteOpinion, postOpinion } from '../api/Opinions';
+import { postPurchase } from '../api/Purchases';
+import ReviewModal from './ReviewModal';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 export default function ProfileScreen() {
     const { user } = useUser();
-    const customerId = user.customerId;
+    const customerId = user.customerId || 1;
 
     const [firstName, setFirstName] = useState('');
     const [lastName, setLastName] = useState('');
@@ -30,6 +34,41 @@ export default function ProfileScreen() {
 
     const [likes, setLikes] = useState([]);
     const [dislikes, setDislikes] = useState([]);
+
+    const [reviewModalOpen, setReviewModalOpen] = useState(false);
+    const [selectedClothingForReview, setSelectedClothingForReview] =
+        useState(null);
+
+    const [openSnackbar, setOpenSnackbar] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+
+    const handleSnackbarOpen = (message) => {
+        setSnackbarMessage(message);
+        setOpenSnackbar(true);
+    };
+
+    const handleSnackbarClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return;
+        }
+        setOpenSnackbar(false);
+    };
+
+    const handleOpenReviewModal = (clothing) => {
+        setSelectedClothingForReview(clothing);
+        setReviewModalOpen(true);
+    };
+
+    const handlePostedReviewModal = () => {
+        setSelectedClothingForReview(null);
+        handleSnackbarOpen('Review posted!');
+        setReviewModalOpen(false);
+    };
+
+    const handleCancelReviewModal = () => {
+        setSelectedClothingForReview(null);
+        setReviewModalOpen(false);
+    };
 
     const config2 = {
         borderRadius: '8px',
@@ -70,10 +109,10 @@ export default function ProfileScreen() {
             setLoading(false);
         };
 
-        const fetchOpinions = async () => {
+        const fetchActions = async () => {
             try {
                 const customerId = user.customerId || 1; // Default to 1 if user.customerId is undefined
-                const data = await fetchCustomerOpinions(customerId);
+                const data = await fetchCustomerActions(customerId);
                 setLikes(
                     data.filter((opinion) => opinion.Opinion_Type === 'L')
                 );
@@ -85,7 +124,7 @@ export default function ProfileScreen() {
             }
         };
 
-        fetchOpinions();
+        fetchActions();
 
         fetchData();
     }, [user.customerId]);
@@ -106,7 +145,7 @@ export default function ProfileScreen() {
                 customerId
             );
             if (updateSuccessful) {
-                alert('Profile updated successfully!');
+                handleSnackbarOpen('Profile update was successful!');
             } else {
                 alert('Failed to update profile. Please try again.');
             }
@@ -118,22 +157,87 @@ export default function ProfileScreen() {
         }
     };
 
+    const handlePurchase = async (clothingId) => {
+        try {
+            await postPurchase({ customerId, clothingId });
+            setLikes((prevLikes) =>
+                prevLikes.map((item) =>
+                    item.Clothing_Id === clothingId
+                        ? { ...item, Purchased: true }
+                        : item
+                )
+            );
+            setDislikes((prevDislikes) =>
+                prevDislikes.map((item) =>
+                    item.Clothing_Id === clothingId
+                        ? { ...item, Purchased: true }
+                        : item
+                )
+            );
+            handleSnackbarOpen("You've purchased this item!");
+        } catch (error) {
+            console.error('Failed to post purchase:', error);
+            alert('Failed to save your purchase. Please try again.');
+        }
+    };
+
     const handlePasswordChangeClick = () => {
         setShowPassword(!showPassword);
     };
 
+    const handleOpinionChange = (clothingId, newOpinionType) => async () => {
+        try {
+            await postOpinion({
+                customerId: customerId,
+                clothingId: clothingId,
+                opinionType: newOpinionType,
+            });
+
+            handleSnackbarOpen('Opinion updated!');
+
+            const updatedLikes = likes.filter(
+                (item) => item.Clothing_Id !== clothingId
+            );
+            const updatedDislikes = dislikes.filter(
+                (item) => item.Clothing_Id !== clothingId
+            );
+
+            const clothingItem = likes
+                .concat(dislikes)
+                .find((item) => item.Clothing_Id === clothingId);
+
+            if (newOpinionType === 'L') {
+                setLikes([
+                    ...updatedLikes,
+                    { ...clothingItem, Opinion_Type: 'L' },
+                ]);
+                setDislikes(updatedDislikes);
+            } else {
+                setDislikes([
+                    ...updatedDislikes,
+                    { ...clothingItem, Opinion_Type: 'D' },
+                ]);
+                setLikes(updatedLikes);
+            }
+        } catch (err) {
+            console.error('Error changing opinion:', err);
+            alert('Failed to change opinion. Please try again.');
+        }
+    };
+
     const removeOpinion = async (clothingId) => {
         try {
-            await deleteOpinion({ customerId, clothingId }); // Call the API
-            // Update state to remove the opinion from UI
+            await deleteOpinion({ customerId, clothingId });
             setLikes((prevLikes) =>
                 prevLikes.filter((item) => item.Clothing_Id !== clothingId)
             );
             setDislikes((prevDislikes) =>
                 prevDislikes.filter((item) => item.Clothing_Id !== clothingId)
             );
+            handleSnackbarOpen("You've removed an opinion.");
         } catch (error) {
             console.error('Failed to delete opinion:', error);
+            alert('Failed to remove your opinion. Please try again.');
         }
     };
 
@@ -144,6 +248,31 @@ export default function ProfileScreen() {
         </div>
     ) : (
         <div className="flex flex-col items-center h-screen">
+            {selectedClothingForReview && (
+                <ReviewModal
+                    open={reviewModalOpen}
+                    onCancel={handleCancelReviewModal}
+                    onPost={handlePostedReviewModal}
+                    clothing={selectedClothingForReview}
+                />
+            )}
+            <Snackbar
+                open={openSnackbar}
+                autoHideDuration={3000}
+                onClose={handleSnackbarClose}
+                anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right',
+                }}
+            >
+                <Alert
+                    onClose={handleSnackbarClose}
+                    severity="success"
+                    sx={{ width: '100%' }}
+                >
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
             <Navbar />
             <div className="flex flex-row h-full w-full ">
                 <div className="p-6 m-2 bg-primary rounded-xl shadow-xl text-center basis-1/4">
@@ -229,9 +358,11 @@ export default function ProfileScreen() {
                             <MiniClothingCard
                                 key={clothing.Clothing_Id}
                                 clothing={clothing}
-                                onDelete={() =>
-                                    removeOpinion(clothing.Clothing_Id)
-                                }
+                                onDelete={removeOpinion}
+                                onPurchase={handlePurchase}
+                                onReview={handleOpenReviewModal}
+                                opinionType="l"
+                                onOpinionChange={handleOpinionChange}
                             />
                         ))}
                     </div>
@@ -242,6 +373,10 @@ export default function ProfileScreen() {
                                 key={clothing.Clothing_Id}
                                 clothing={clothing}
                                 onDelete={removeOpinion}
+                                onPurchase={handlePurchase}
+                                onReview={handleOpenReviewModal}
+                                opinionType="d"
+                                onOpinionChange={handleOpinionChange}
                             />
                         ))}
                     </div>

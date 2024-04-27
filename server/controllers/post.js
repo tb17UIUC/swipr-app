@@ -106,5 +106,44 @@ module.exports = function (getPoolConnection) {
         }
     };
 
-    return { postOpinion, postCustomer, loginCustomer };
+    const postPurchase = async (req, res) => {
+        const { customerId, clothingId } = req.body;
+        const query = `INSERT INTO Purchases (Customer_Id, Clothing_Id) VALUES (?, ?);`;
+        const values = [customerId, clothingId];
+
+        try {
+            const connection = await getPoolConnection();
+            await connection.query(query, values);
+            res.status(201).send('Purchase recorded');
+            connection.release();
+        } catch (error) {
+            console.error('Error posting purchase:', error);
+            res.status(500).send('Error posting purchase');
+        }
+    };
+
+    const postReview = async (req, res) => {
+        const { customerId, clothingId, brand, starRating, fit, text } =
+            req.body;
+        const query = `INSERT INTO Reviews (Customer_Id, Clothing_Id, Brand, Star_Rating, Fit, Text) VALUES (?, ?, ?, ?, ?, ?);`;
+        const values = [customerId, clothingId, brand, starRating, fit, text];
+
+        try {
+            const connection = await getPoolConnection();
+            await connection.query(query, values);
+            res.status(201).send('Review added successfully');
+            connection.release();
+        } catch (error) {
+            console.error('Error posting review:', error);
+            res.status(500).send('Error posting review');
+        }
+    };
+
+    return {
+        postOpinion,
+        postCustomer,
+        loginCustomer,
+        postPurchase,
+        postReview,
+    };
 };
