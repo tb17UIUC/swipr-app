@@ -60,9 +60,49 @@ module.exports = function (getPoolConnection) {
         }
     };
 
+    const deleteCustomer = async (req, res) => {
+        const { customerId } = req.body;
+        const query = 'DELETE FROM Customers WHERE Customer_Id = ?';
+
+        try {
+            const connection = await getPoolConnection();
+            const result = await connection.query(query, [customerId]);
+            connection.release();
+            if (result.affectedRows === 0) {
+                res.status(404).send('No customer found to delete');
+            } else {
+                res.status(200).send('Customer deleted successfully');
+            }
+        } catch (error) {
+            console.error('Error deleting customer:', error);
+            res.status(500).send('Error deleting customer');
+        }
+    };
+
+    const deleteClothing = async (req, res) => {
+        const { clothingId } = req.body;
+        const query = 'DELETE FROM Clothes WHERE Clothing_Id = ?';
+
+        try {
+            const connection = await getPoolConnection();
+            const result = await connection.query(query, [clothingId]);
+            connection.release();
+            if (result.affectedRows === 0) {
+                res.status(404).send('No clothing found to delete');
+            } else {
+                res.status(200).send('Clothing deleted successfully');
+            }
+        } catch (error) {
+            console.error('Error deleting clothing:', error);
+            res.status(500).send('Error deleting clothing');
+        }
+    };
+
     return {
         deleteOpinion,
         deletePurchase,
         deleteReview,
+        deleteCustomer,
+        deleteClothing,
     };
 };

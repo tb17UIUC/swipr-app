@@ -77,7 +77,7 @@ export default function ProfileScreen() {
         height: '100px',
         objectFit: 'contain',
         aspectRatio: 1,
-        compressInitial: 0.3,
+        compressInitial: 0.5,
         hideDownloadBtn: true,
         hideAddBtn: true,
     };

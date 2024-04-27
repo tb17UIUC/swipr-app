@@ -163,14 +163,24 @@ export default function ClothesScreen() {
                 >
                     <HandThumbDownIcon className="h-6 w-6 text-white" />
                 </button>
-                <animated.div style={{ x, opacity }} className="h-full w-full">
-                    {clothingItems.length > 0 &&
-                        currentIndex < clothingItems.length && (
+                {clothingItems.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-full bg-gray-200 rounded-xl">
+                        <p className="text-lg font-medium mt-4 p-4">
+                            No clothes found. Try adjusting your filters!
+                        </p>
+                    </div>
+                ) : (
+                    <animated.div
+                        style={{ x, opacity }}
+                        className="h-full w-full"
+                    >
+                        {currentIndex < clothingItems.length && (
                             <ClothingCard
                                 clothing={clothingItems[currentIndex]}
                             />
                         )}
-                </animated.div>
+                    </animated.div>
+                )}
                 <button
                     onClick={() => handleSwipe('right')}
                     className="bg-primary hover:bg-tertiary rounded-full p-5 shadow-lg ml-4"

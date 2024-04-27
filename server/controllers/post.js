@@ -139,11 +139,33 @@ module.exports = function (getPoolConnection) {
         }
     };
 
+    const postClothes = async (req, res) => {
+        const { name, clothingColor, brand, type, price, image, url } =
+            req.body;
+
+        const query = `
+        INSERT INTO Clothes (Name, Clothing_Color, Brand, Type, Price, Image, URL)
+        VALUES (?, ?, ?, ?, ?, ?, ?);
+    `;
+        const values = [name, clothingColor, brand, type, price, image, url];
+
+        try {
+            const connection = await getPoolConnection();
+            await connection.query(query, values);
+            res.status(201).send('Clothing added successfully');
+            connection.release();
+        } catch (error) {
+            console.error('Error posting clothing:', error);
+            res.status(500).send('Error posting clothing');
+        }
+    };
+
     return {
         postOpinion,
         postCustomer,
         loginCustomer,
         postPurchase,
         postReview,
+        postClothes,
     };
 };

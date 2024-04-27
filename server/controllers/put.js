@@ -63,5 +63,37 @@ module.exports = function (getPoolConnection) {
         }
     };
 
-    return { putCustomer, putOpinion };
+    const putClothes = async (req, res) => {
+        const { name, clothingColor, brand, type, price, image, url } =
+            req.body;
+        const clothingId = req.params.id;
+
+        const query = `UPDATE Clothes SET Name = ?, Clothing_Color = ?, Brand = ?, Type = ?, Price = ?, Image = ?, URL = ? WHERE Clothing_Id = ?;`;
+        const values = [
+            name,
+            clothingColor,
+            brand,
+            type,
+            price,
+            image,
+            url,
+            clothingId,
+        ];
+
+        try {
+            const connection = await getPoolConnection();
+            const result = await connection.query(query, values);
+            if (result.affectedRows === 0) {
+                res.status(404).send('No clothing found with that ID');
+            } else {
+                res.status(200).send('Clothing updated successfully');
+            }
+            connection.release();
+        } catch (error) {
+            console.error('Error updating clothing:', error);
+            res.status(500).send('Error updating clothing');
+        }
+    };
+
+    return { putCustomer, putOpinion, putClothes };
 };
