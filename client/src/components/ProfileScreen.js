@@ -13,6 +13,7 @@ import MiniClothingCard from './MiniClothingCard';
 import { deleteOpinion, postOpinion } from '../api/Opinions';
 import { postPurchase } from '../api/Purchases';
 import ReviewModal from './ReviewModal';
+import ViewReviewModal from './ViewReviewModal';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 
@@ -41,6 +42,10 @@ export default function ProfileScreen() {
 
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
+
+    const [viewReviewOpen, setViewReviewOpen] = useState(false);
+    const [selectedClothingForViewReview, setSelectedClothingForViewReview] =
+        useState(null);
 
     const handleSnackbarOpen = (message) => {
         setSnackbarMessage(message);
@@ -241,6 +246,16 @@ export default function ProfileScreen() {
         }
     };
 
+    const handleViewReviews = (clothing) => {
+        setSelectedClothingForViewReview(clothing)
+        setViewReviewOpen(true);
+    };
+
+    const handleCancelViewReviewModal = () => {
+        setSelectedClothingForViewReview(null);
+        setViewReviewOpen(false);
+    };
+
     return loading ? (
         <div className="flex flex-col items-center justify-center h-screen">
             <p className="text-lg font-medium mb-2">Fetching Profile Info</p>
@@ -254,6 +269,13 @@ export default function ProfileScreen() {
                     onCancel={handleCancelReviewModal}
                     onPost={handlePostedReviewModal}
                     clothing={selectedClothingForReview}
+                />
+            )}
+            {selectedClothingForViewReview && (
+                <ViewReviewModal
+                    open={viewReviewOpen}
+                    onCancel={handleCancelViewReviewModal}
+                    clothing={selectedClothingForViewReview}
                 />
             )}
             <Snackbar
@@ -363,6 +385,7 @@ export default function ProfileScreen() {
                                 onReview={handleOpenReviewModal}
                                 opinionType="l"
                                 onOpinionChange={handleOpinionChange}
+                                onViewReviews={handleViewReviews}
                             />
                         ))}
                     </div>
@@ -377,6 +400,7 @@ export default function ProfileScreen() {
                                 onReview={handleOpenReviewModal}
                                 opinionType="d"
                                 onOpinionChange={handleOpinionChange}
+                                onViewReviews={handleViewReviews}
                             />
                         ))}
                     </div>

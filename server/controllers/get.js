@@ -85,6 +85,20 @@ module.exports = function (getPoolConnection) {
         }
     };
 
+    const readReview = async (req, res) => {
+        const clothingId = req.params.id;
+        try {
+            const connection = await getPoolConnection();
+            let query = `SELECT Clothing_Id, Brand, Star_Rating, Fit, Text FROM Reviews WHERE Clothing_Id = ?`;
+            const [results] = await connection.execute(query, [clothingId]);
+            res.json(results);
+            connection.release();
+        } catch (error) {
+            console.error('Failed to retrieve matches:', error);
+            res.status(500).send('Failed to retrieve matches');
+        }
+    };
+
     const getFilterInfo = async (req, res) => {
         try {
             const connection = await getPoolConnection();
@@ -220,6 +234,7 @@ module.exports = function (getPoolConnection) {
     return {
         getFilteredClothes,
         getMatches,
+        readReview, 
         getFilterInfo,
         getCustomerActions,
         getClothingOpinions,

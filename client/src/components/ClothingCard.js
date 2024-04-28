@@ -6,7 +6,7 @@ import {
     HeartIcon,
 } from '@heroicons/react/24/solid';
 
-const ClothingCard = ({ clothing }) => {
+const ClothingCard = ({ clothing, onViewReviews }) => {
     const [opinions, setOpinions] = useState({
         like_count: 0,
         dislike_count: 0,
@@ -27,7 +27,9 @@ const ClothingCard = ({ clothing }) => {
             }
         };
 
+
         fetchOpinionsForItem(); // Call the async function
+
     }, [clothing]);
 
     const handleImageError = (e) => {
@@ -71,6 +73,13 @@ const ClothingCard = ({ clothing }) => {
                         <HeartIcon className="h-5 w-5 text-white ml-3" />{' '}
                         <span>{opinions.superlike_count}</span>
                     </div>
+                </div>
+                <div className="flex justify-center items-center">
+                <button className="bg-white text-primary rounded hover:bg-tertiary h-10 w-40 text-lg px-4"
+                    onClick={() => onViewReviews(clothing)}
+                >
+                    <strong>View Reviews</strong>
+                </button>
                 </div>
             </div>
         </div>
