@@ -100,16 +100,44 @@ module.exports = function (getPoolConnection) {
     };
 
     const filterReview = async (req, res) => {
-        const { MaxPrice, MinPrice, Sustainability, Brand, MIUSA, MO, Star_Rating } =
-            req.body;
-        console.log(MaxPrice, MinPrice, Sustainability, Brand, MIUSA, MO, Star_Rating)
+        const {
+            MaxPrice,
+            MinPrice,
+            Sustainability,
+            Brand,
+            MIUSA,
+            MO,
+            Star_Rating,
+        } = req.query;
+
+        // console.log(req.body);
+        // console.log(req.params);
+        // console.log(req.query);
+        // console.log(
+        //     MaxPrice,
+        //     MinPrice,
+        //     Sustainability,
+        //     Brand,
+        //     MIUSA,
+        //     MO,
+        //     Star_Rating
+        // );
+
         const query = `CALL FilterReviews(?,?,?,?,?,?,?)`;
-        const values = [MaxPrice, MinPrice, Sustainability, Brand, MIUSA, MO, Star_Rating];
+        const values = [
+            MaxPrice,
+            MinPrice,
+            Sustainability,
+            Brand,
+            MIUSA,
+            MO,
+            Star_Rating,
+        ];
         try {
             const connection = await getPoolConnection();
             const [results] = await connection.query(query, values);
-            res.json(results)
-            console.log(results)
+            res.json(results);
+            console.log(results);
             connection.release();
         } catch (error) {
             console.error('Error filtering review:', error);
@@ -252,7 +280,7 @@ module.exports = function (getPoolConnection) {
     return {
         getFilteredClothes,
         getMatches,
-        readReview, 
+        readReview,
         filterReview,
         getFilterInfo,
         getCustomerActions,
