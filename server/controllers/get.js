@@ -94,8 +94,26 @@ module.exports = function (getPoolConnection) {
             res.json(results);
             connection.release();
         } catch (error) {
-            console.error('Failed to retrieve matches:', error);
-            res.status(500).send('Failed to retrieve matches');
+            console.error('Failed to retrieve reviews:', error);
+            res.status(500).send('Failed to retrieve reviews');
+        }
+    };
+
+    const filterReview = async (req, res) => {
+        const { MaxPrice, MinPrice, Sustainability, Brand, MIUSA, MO, Star_Rating } =
+            req.body;
+        console.log(MaxPrice, MinPrice, Sustainability, Brand, MIUSA, MO, Star_Rating)
+        const query = `CALL FilterReviews(?,?,?,?,?,?,?)`;
+        const values = [MaxPrice, MinPrice, Sustainability, Brand, MIUSA, MO, Star_Rating];
+        try {
+            const connection = await getPoolConnection();
+            const [results] = await connection.query(query, values);
+            res.json(results)
+            console.log(results)
+            connection.release();
+        } catch (error) {
+            console.error('Error filtering review:', error);
+            res.status(500).send('Error filtering review');
         }
     };
 
@@ -235,6 +253,7 @@ module.exports = function (getPoolConnection) {
         getFilteredClothes,
         getMatches,
         readReview, 
+        filterReview,
         getFilterInfo,
         getCustomerActions,
         getClothingOpinions,

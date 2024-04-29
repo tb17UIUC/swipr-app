@@ -36,6 +36,7 @@ module.exports = function (getPoolConnection) {
         getFilteredClothes,
         getMatches,
         readReview, 
+        filterReview,
         getFilterInfo,
         getClothingOpinions,
         getCustomerActions,
@@ -71,6 +72,7 @@ module.exports = function (getPoolConnection) {
     router.delete('/api/purchases/delete', bodyParser.json(), deletePurchase);
 
     router.get('/api/reviews/read/:id', bodyParser.json(), readReview);
+    router.get('/api/reviews/filter', bodyParser.json(), filterReview);
     router.post('/api/reviews/create/', bodyParser.json(), postReview);
     router.delete('/api/reviews/delete', bodyParser.json(), deleteReview);
 

@@ -20,7 +20,13 @@ export default function Navbar() {
                 <div className="flex items-center">
                     {/* Navbar links */}
                     <button
-                        className="bg-white text-primary font-semibold py-2 px-4 rounded-lg shadow"
+                        className="bg-white text-primary font-semibold py-2 px-4 rounded-lg shadow ml-4"
+                        onClick={() => navigate('/reviews')}                 
+                    >
+                        Reviews
+                    </button>
+                    <button
+                        className="bg-white text-primary font-semibold py-2 px-4 rounded-lg shadow ml-4"
                         onClick={() => navigate('/clothes')}
                     >
                         Explore Styles
