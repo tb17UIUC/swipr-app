@@ -17,6 +17,20 @@ export const getFilteredClothes = async (filters) => {
     }
 };
 
+export const getClothesById = async (filters) => {
+    console.log(filters);
+
+    try {
+        const response = await client.get('/clothes/get-id', {
+            params: filters,
+        });
+        // console.log(response.data); // Logging the response data
+        return response.data;
+    } catch (error) {
+        console.error('Failed to retrieve clothes:', error);
+    }
+};
+
 export const getMatches = async (filters) => {
     try {
         const response = await client.get('/clothes/get-matches', {

@@ -34,6 +34,7 @@ module.exports = function (getPoolConnection) {
     // Import controllers with the connection pool handler
     const {
         getFilteredClothes,
+        getClothesById,
         getMatches,
         getFilterInfo,
         getClothingOpinions,
@@ -59,6 +60,7 @@ module.exports = function (getPoolConnection) {
     } = require('../controllers/delete')(getPoolConnection);
 
     router.get('/api/clothes/get-filtered', getFilteredClothes);
+    router.get('/api/clothes/get-id', getClothesById);
     router.get('/api/clothes/get-matches', getMatches);
     router.post('/api/clothes/create', bodyParser.json(), postClothes);
     router.put('/api/clothes/update/:id', bodyParser.json(), putClothes);

@@ -68,6 +68,24 @@ module.exports = function (getPoolConnection) {
         }
     };
 
+    const getClothesById = async (req, res) => {
+        try {
+            const {id} = req.query;
+            console.log(id)
+            // console.log(customerId, typeof customerId);
+            const connection = await getPoolConnection();
+            let query = `SELECT C.Clothing_Id, C.Name, C.Clothing_Color, C.Brand, C.Type, C.Price, C.Image, C.URL FROM Clothes C WHERE C.Clothing_Id = ${id}`;
+            // console.log(query);
+            const [results] = await connection.query(query);
+            //shuffleArray(results);
+            res.json(results);
+            connection.release();
+        } catch (error) {
+            console.error('Failed to retrieve matches:', error);
+            res.status(500).send('Failed to retrieve matches');
+        }
+    };
+
     const getMatches = async (req, res) => {
         try {
             const { customerId } = req.query;
@@ -219,6 +237,7 @@ module.exports = function (getPoolConnection) {
 
     return {
         getFilteredClothes,
+        getClothesById,
         getMatches,
         getFilterInfo,
         getCustomerActions,
