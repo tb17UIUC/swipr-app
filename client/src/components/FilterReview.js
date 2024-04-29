@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Slider } from '@mui/material';
-import { filterReview } from '../api/Reviews';
 
-const FilterReviewModal = ({ filterReviewFunc }) => {
+const FilterReviewModal = ({ filterReviewFunc, onClose }) => {
     // State variables to hold the values
     const [maxPrice, setMaxPrice] = useState(999); // Default value for maxPrice
     const [minPrice, setMinPrice] = useState(9.9); // Default value for minPrice
@@ -186,7 +185,7 @@ const FilterReviewModal = ({ filterReviewFunc }) => {
                 <div className="flex justify-center items-center">
                     <button
                         className="bg-white text-primary rounded hover:bg-tertiary h-10 w-40 text-lg px-4"
-                        onClick={() => filterReviewFunc(FilterArray())}
+                        onClick={() => {filterReviewFunc(FilterArray()); onClose()}}
                     >
                         <strong>View Reviews</strong>
                     </button>
