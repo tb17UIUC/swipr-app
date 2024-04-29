@@ -51,31 +51,36 @@ export default function ReviewsScreen() {
 
 const AdditionalBox = ({ filterInfo }) => {
     return (
-      <div className="bg-white text-black rounded-xl mb-4 p-6 overflow-auto" style={{ maxWidth: "1000px", maxHeight: "80vh" }}>
-        {filterInfo.map((item, index) => (
-          <div key={index} className="bg-gray-200 rounded-xl mb-4 p-6 flex" style={{ maxWidth: "600px" }}>
-            <div className="flex flex-col justify-center items-center mr-6" style={{ width: "50%" }}>
-              <h2 className="text-xl font-bold text-center mb-4">Review for <strong>{item.Name}</strong> from <i>{item.Brand}</i></h2>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <img src={item.Image} alt={item.Name} className="max-w-xs max-h-48 rounded-lg mb-2" />
-                <p><strong>Price:</strong> ${item.Price}</p>
-              </div>
-            </div>
-            <div className="border-l-2 border-solid border-gray-400 pl-6" style={{ width: "50%" }}>
-              <p><strong>Star Rating:</strong> <span style={{ color: "yellow" }}>{"★".repeat(Math.floor(item.Star_Rating))}</span></p>
-              <p><strong>Avg Star Rating:</strong> <span style={{ color: "yellow" }}>{"★".repeat(Math.floor(item.Avg_Star_Rating))}</span></p>
-              <p><strong>Clothing ID:</strong> {item.Clothing_Id}</p>
-              <p><strong>Made in USA:</strong> <span className={item.Made_In_USA ? 'text-green-600' : 'text-red-600'}>{item.Made_In_USA ? 'Yes' : 'No'}</span></p>
-              <p><strong>Minority Owned:</strong> <span className={item.Minority_Owned ? 'text-green-600' : 'text-red-600'}>{item.Minority_Owned ? 'Yes' : 'No'}</span></p>
-              <p><strong>Sustainability:</strong> {item.Sustainability}%</p>
-              <p><strong></strong> {item.Text}</p>
-              <a href={item.URL} className="block text-center mt-4 underline" target="_blank" rel="noopener noreferrer">View Product</a>
-            </div>
-          </div>
-        ))}
-      </div>
+        <div className="bg-white text-black rounded-xl mb-4 p-6 overflow-auto" style={{ maxWidth: "1000px", maxHeight: "80vh" }}>
+            {filterInfo.length === 0 ? (
+                <p className="text-center text-lg"><strong>Sorry, we couldn't find any reviews with those filters</strong></p>
+            ) : (
+                filterInfo.map((item, index) => (
+                    <div key={index} className="bg-gray-200 rounded-xl mb-4 p-6 flex" style={{ maxWidth: "600px" }}>
+                        <div className="flex flex-col justify-center items-center mr-6" style={{ width: "50%" }}>
+                            <h2 className="text-xl font-bold text-center mb-4">Review for <strong>{item.Name}</strong> from <i>{item.Brand}</i></h2>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <img src={item.Image} alt={item.Name} className="max-w-xs max-h-48 rounded-lg mb-2" />
+                                <p><strong>Price:</strong> ${item.Price}</p>
+                            </div>
+                        </div>
+                        <div className="border-l-2 border-solid border-gray-400 pl-6" style={{ width: "50%" }}>
+                            <p><strong>Star Rating:</strong> <span style={{ color: "yellow" }}>{"★".repeat(Math.floor(item.Star_Rating))}</span></p>
+                            <p><strong>Avg Star Rating:</strong> <span style={{ color: "yellow" }}>{"★".repeat(Math.floor(item.Avg_Star_Rating))}</span></p>
+                            <p><strong>Clothing ID:</strong> {item.Clothing_Id}</p>
+                            <p><strong>Made in USA:</strong> <span className={item.Made_In_USA ? 'text-green-600' : 'text-red-600'}>{item.Made_In_USA ? 'Yes' : 'No'}</span></p>
+                            <p><strong>Minority Owned:</strong> <span className={item.Minority_Owned ? 'text-green-600' : 'text-red-600'}>{item.Minority_Owned ? 'Yes' : 'No'}</span></p>
+                            <p><strong>Sustainability:</strong> {item.Sustainability}%</p>
+                            <p><strong></strong> {item.Text}</p>
+                            <a href={item.URL} className="block text-center mt-4 underline" target="_blank" rel="noopener noreferrer">View Product</a>
+                        </div>
+                    </div>
+                ))
+            )}
+        </div>
     );
-  };
+};
+
   
   
 
