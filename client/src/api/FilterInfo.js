@@ -5,7 +5,7 @@ import client from './client';
 export const getFilterInfo = async (filters) => {
     try {
         const response = await client.get('/filters/get-info');
-        console.log(response.data); // Logging the response data
+        // console.log(response.data); // Logging the response data
         return response.data;
     } catch (error) {
         console.error('Failed to retrieve filter info:', error);

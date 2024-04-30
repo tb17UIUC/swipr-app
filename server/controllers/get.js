@@ -253,11 +253,7 @@ module.exports = function (getPoolConnection) {
     const getCustomerInfo = async (req, res) => {
         const customerId = req.params.id;
 
-        const query = `
-        SELECT Customer_Id, Email, First_Name, Last_Name, University_Id, TO_BASE64(Profile_Picture) as Profile_Picture
-        FROM Customers
-        WHERE Customer_Id = ?
-    `;
+        const query = `SELECT Customer_Id, Email, First_Name, Last_Name, University_Id, Profile_Picture FROM Customers WHERE Customer_Id = ?`;
 
         try {
             const connection = await getPoolConnection();
@@ -265,6 +261,15 @@ module.exports = function (getPoolConnection) {
 
             if (result.length > 0) {
                 const customerInfo = result[0];
+
+                if (customerInfo.Profile_Picture) {
+                    const base64Image =
+                        customerInfo.Profile_Picture.toString('base64');
+                    customerInfo.Profile_Picture = `data:image/jpeg;base64,${base64Image}`;
+                }
+
+                // console.log(customerInfo);
+
                 res.status(200).send(customerInfo);
             } else {
                 res.status(404).send({ message: 'Customer not found' });

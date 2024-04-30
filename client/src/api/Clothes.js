@@ -28,3 +28,26 @@ export const getMatches = async (filters) => {
         console.error('Failed to retrieve clothes:', error);
     }
 };
+
+export const updateClothing = async (clothingId, clothingData) => {
+    try {
+        const response = await client.put(
+            `/clothes/update/${clothingId}`,
+            clothingData
+        );
+        return response.data;
+    } catch (error) {
+        console.error('Failed to update clothing:', error);
+        throw error;
+    }
+};
+
+export const deleteClothing = async (clothingId) => {
+    try {
+        const response = await client.delete(`/clothes/delete/${clothingId}`);
+        return response.data;
+    } catch (error) {
+        console.error('Failed to delete clothing:', error);
+        throw error;
+    }
+};

@@ -82,7 +82,7 @@ export default function ProfileScreen() {
         height: '100px',
         objectFit: 'contain',
         aspectRatio: 1,
-        compressInitial: 0.3,
+        compressInitial: 10,
         hideDownloadBtn: true,
         hideAddBtn: true,
     };
@@ -94,14 +94,16 @@ export default function ProfileScreen() {
                 const customerInfo = await fetchCustomerInfo(
                     user.customerId || 1
                 );
+
                 if (customerInfo) {
                     setFirstName(customerInfo.First_Name);
                     setLastName(customerInfo.Last_Name);
                     setEmail(customerInfo.Email);
                     setUniversityId(customerInfo.University_Id);
+                    setProfilePicture(customerInfo.Profile_Picture);
                 }
 
-                const filterData = await getFilterInfo(); // Assuming it returns universities
+                const filterData = await getFilterInfo();
                 setUniversities(
                     filterData.universities.map((uni) => ({
                         value: uni.University_Id,
@@ -116,7 +118,7 @@ export default function ProfileScreen() {
 
         const fetchActions = async () => {
             try {
-                const customerId = user.customerId || 1; // Default to 1 if user.customerId is undefined
+                const customerId = user.customerId || 1;
                 const data = await fetchCustomerActions(customerId);
                 setLikes(
                     data.filter((opinion) => opinion.Opinion_Type === 'L')

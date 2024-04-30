@@ -26,7 +26,12 @@ export default function LoginScreen() {
             const customerId = await loginCustomer(customerData);
             if (customerId) {
                 setUser({ customerId });
-                navigate('/clothes');
+                if (customerId === 2514) {
+                    // 2514 = Admin Id
+                    navigate('/admin');
+                } else {
+                    navigate('/clothes');
+                }
             } else {
                 setIncorrectLogin(true);
             }

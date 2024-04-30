@@ -1,4 +1,8 @@
-// import identifySkinTone from '../helpers/skinTone';
+const {
+    identifySkinTone,
+    readClothingColorsFromCSV,
+    matchClothingColors,
+} = require('../helpers/skinTone');
 
 module.exports = function (getPoolConnection) {
     const postOpinion = async (req, res) => {
@@ -28,17 +32,18 @@ module.exports = function (getPoolConnection) {
             universityId,
         } = req.body;
 
-        const profilePictureBuffer = Buffer.from(profilePicture, 'base64');
+        const base64Image = profilePicture.split(';base64,').pop();
+        const profilePictureBuffer = Buffer.from(base64Image, 'base64');
 
-        // implement identifyskintone
-        // const { sc_h, sc_s, sc_v, matchingColors } =
-        //     identifySkinTone(profilePictureBuffer);
+        const [sc_h, sc_s, sc_v] = await identifySkinTone(profilePicture);
 
-        const sc_h = 0; // Assuming skin color values are determined elsewhere
-        const sc_s = 0;
-        const sc_v = 0;
-        const matchingColors =
-            'air_force_blue_raf,air_force_blue_usaf,air_superiority_blue,alabama_crimson,alice_blue,alizarin_crimson,alloy_orange,almond,amaranth,amber,amber_sae_ece,american_rose,amethyst,android_green,antique_brass,antique_fuchsia,antique_ruby,antique_white,anti_flash_white,ao_english';
+        const csvFilePath = './colors.csv';
+        const clothingColors = readClothingColorsFromCSV(csvFilePath);
+        const matches = matchClothingColors(
+            { h: sc_h, s: sc_s, v: sc_v },
+            clothingColors
+        );
+        const matchingColors = matches.map((match) => match.color).join(',');
 
         const callProcedure = 'CALL RegisterUser(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
         const params = [
@@ -58,7 +63,7 @@ module.exports = function (getPoolConnection) {
             const connection = await getPoolConnection();
             const [results] = await connection.query(callProcedure, params);
 
-            console.log(results);
+            // console.log(results);
 
             // Assuming the SELECT statement in the stored procedure returns the customer_id
             const newCustomerId = results[0][0].CustomerId;
@@ -139,11 +144,33 @@ module.exports = function (getPoolConnection) {
         }
     };
 
+    const postClothes = async (req, res) => {
+        const { name, clothingColor, brand, type, price, image, url } =
+            req.body;
+
+        const query = `
+        INSERT INTO Clothes (Name, Clothing_Color, Brand, Type, Price, Image, URL)
+        VALUES (?, ?, ?, ?, ?, ?, ?);
+    `;
+        const values = [name, clothingColor, brand, type, price, image, url];
+
+        try {
+            const connection = await getPoolConnection();
+            await connection.query(query, values);
+            res.status(201).send('Clothing added successfully');
+            connection.release();
+        } catch (error) {
+            console.error('Error posting clothing:', error);
+            res.status(500).send('Error posting clothing');
+        }
+    };
+
     return {
         postOpinion,
         postCustomer,
         loginCustomer,
         postPurchase,
         postReview,
+        postClothes,
     };
 };
