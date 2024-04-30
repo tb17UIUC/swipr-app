@@ -1,5 +1,6 @@
-const { createCanvas, loadImage } = require('canvas');
+const sharp = require('sharp');
 const fs = require('fs');
+const path = require('path');
 
 function rgbToHsv(r, g, b) {
     (r /= 255), (g /= 255), (b /= 255);
@@ -62,55 +63,59 @@ function isSkinPixel(r, g, b) {
     }
 }
 
-async function identifySkinTone(
-    imagePath,
-    cropX,
-    cropY,
-    cropWidth,
-    cropHeight
-) {
-    const canvas = createCanvas();
-    const context = canvas.getContext('2d');
-    const image = await loadImage(imagePath);
-    canvas.width = cropWidth;
-    canvas.height = cropHeight;
-    context.drawImage(
-        image,
-        cropX,
-        cropY,
-        cropWidth,
-        cropHeight,
-        0,
-        0,
-        cropWidth,
-        cropHeight
-    );
-    const imageData = context.getImageData(0, 0, cropWidth, cropHeight);
-    const data = imageData.data;
-
-    let totalH = 0;
-    let totalS = 0;
-    let totalV = 0;
-    let skinPixelCount = 0;
-
-    for (let i = 0; i < data.length; i += 4) {
-        const r = data[i];
-        const g = data[i + 1];
-        const b = data[i + 2];
-        if (isSkinPixel(r, g, b)) {
-            const [h, s, v] = rgbToHsv(r, g, b);
-            totalH += h;
-            totalS += s;
-            totalV += v;
-            skinPixelCount++;
+async function identifySkinTone(base64ImageUri) {
+    try {
+        if (!base64ImageUri) {
+            throw new Error('Base64 image URI is missing or invalid');
         }
+
+        const base64Data = base64ImageUri.replace(
+            /^data:image\/\w+;base64,/,
+            ''
+        );
+
+        const imageBuffer = Buffer.from(base64Data, 'base64');
+
+        // Use sharp to process the image buffer and extract pixel data
+        const { data, info } = await sharp(imageBuffer)
+            .raw()
+            .toBuffer({ resolveWithObject: true });
+
+        const { width, height } = info;
+        const channels = info.channels || 3; // Assuming RGB image
+
+        let totalH = 0;
+        let totalS = 0;
+        let totalV = 0;
+        let skinPixelCount = 0;
+
+        // Iterate over the pixel data
+        for (let i = 0; i < data.length; i += channels) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+
+            if (isSkinPixel(r, g, b)) {
+                const [h, s, v] = rgbToHsv(r, g, b);
+                totalH += h;
+                totalS += s;
+                totalV += v;
+                skinPixelCount++;
+            }
+        }
+
+        // Calculate average HSV values for skin pixels
+        const avgH = (skinPixelCount > 0 ? totalH / skinPixelCount : 0) / 360;
+        const avgS = skinPixelCount > 0 ? totalS / skinPixelCount : 0;
+        const avgV = skinPixelCount > 0 ? totalV / skinPixelCount : 0;
+
+        // console.log(avgH, avgS, avgV);
+
+        return [avgH, avgS, avgV];
+    } catch (error) {
+        console.error('Error identifying skin tone:', error);
+        return [0, 0, 0];
     }
-
-    const avgH = totalH / skinPixelCount;
-    const avgS = totalS / skinPixelCount;
-    const avgV = totalV / skinPixelCount;
-
-    return [avgH, avgS, avgV];
 }
 
 function colorDistance(hsv1, hsv2) {
@@ -121,7 +126,9 @@ function colorDistance(hsv1, hsv2) {
 }
 
 function readClothingColorsFromCSV(csvFilePath) {
-    const fileContent = fs.readFileSync(csvFilePath, 'utf8');
+    const absolutePath = path.join(__dirname, csvFilePath);
+
+    const fileContent = fs.readFileSync(absolutePath, 'utf8');
     const lines = fileContent.trim().split('\n');
     const clothingColors = [];
     lines.forEach((line, index) => {
@@ -135,19 +142,9 @@ function readClothingColorsFromCSV(csvFilePath) {
             v: parseFloat(v),
         });
     });
+
     return clothingColors;
 }
-
-// function matchClothingColors(skinToneHSV, clothingColors) {
-//     let matches = [];
-//     for (const color of clothingColors) {
-//         const distance = colorDistance(skinToneHSV, color);
-//         matches.push({ color: color.name, distance: distance });
-//     }
-//     matches.sort((a, b) => a.distance - b.distance);
-//     matches = matches.slice(0, 10);
-//     return matches;
-// }
 
 function matchClothingColors(skinToneHSV, clothingColors) {
     let matches = [];
@@ -172,35 +169,13 @@ function matchClothingColors(skinToneHSV, clothingColors) {
         if (selectedMatches.length >= 100) break;
     }
 
+    // console.log(selectedMatches);
+
     return selectedMatches;
 }
 
-const imagePath =
-    '/Users/pranav/Desktop/swipr/sp24-cs411-team092-AliExpressNoAlawiniExpress/server/Helpers/fag.jpeg';
-const cropX = 100;
-const cropY = 100;
-const cropWidth = 200;
-const cropHeight = 200;
-
-const csvFilePath = './colors.csv';
-const clothingColors = readClothingColorsFromCSV(csvFilePath);
-
-identifySkinTone(imagePath, cropX, cropY, cropWidth, cropHeight)
-    .then((skinToneHSV) => {
-        console.log('Average HSV for skin tone:', skinToneHSV);
-        const matches = matchClothingColors(
-            { h: skinToneHSV[0], s: skinToneHSV[1], v: skinToneHSV[2] },
-            clothingColors
-        );
-        console.log('Clothing colors that match your skin tone:');
-        matches.forEach((match, index) => {
-            console.log(
-                `${index + 1}. ${match.color} - Distance: ${match.distance}`
-            );
-        });
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
-
-module.exports = identifySkinTone;
+module.exports = {
+    identifySkinTone,
+    readClothingColorsFromCSV,
+    matchClothingColors,
+};

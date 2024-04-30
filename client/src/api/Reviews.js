@@ -25,3 +25,24 @@ export const deleteReview = async (reviewId) => {
         throw error;
     }
 };
+
+export const readReview = async (clothingId) => {
+    try {
+        const response = await client.get(`/reviews/read/${clothingId}`);
+        return response.data;
+    } catch (error) {
+        console.error('Failed to retrieve review:', error);
+    }
+};
+
+export const filterReview = async (filters2) => {
+    try {
+        const response = await client.get('/reviews/filter', {
+            params: filters2,
+        });
+        console.log(response.data);
+        return response.data;
+    } catch (error) {
+        console.error('Failed to retrieve review:', error);
+    }
+};

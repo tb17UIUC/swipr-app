@@ -13,6 +13,7 @@ import MiniClothingCard from './MiniClothingCard';
 import { deleteOpinion, postOpinion } from '../api/Opinions';
 import { postPurchase } from '../api/Purchases';
 import ReviewModal from './ReviewModal';
+import ViewReviewModal from './ViewReviewModal';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 
@@ -41,6 +42,10 @@ export default function ProfileScreen() {
 
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
+
+    const [viewReviewOpen, setViewReviewOpen] = useState(false);
+    const [selectedClothingForViewReview, setSelectedClothingForViewReview] =
+        useState(null);
 
     const handleSnackbarOpen = (message) => {
         setSnackbarMessage(message);
@@ -77,7 +82,7 @@ export default function ProfileScreen() {
         height: '100px',
         objectFit: 'contain',
         aspectRatio: 1,
-        compressInitial: 0.5,
+        compressInitial: 10,
         hideDownloadBtn: true,
         hideAddBtn: true,
     };
@@ -89,14 +94,16 @@ export default function ProfileScreen() {
                 const customerInfo = await fetchCustomerInfo(
                     user.customerId || 1
                 );
+
                 if (customerInfo) {
                     setFirstName(customerInfo.First_Name);
                     setLastName(customerInfo.Last_Name);
                     setEmail(customerInfo.Email);
                     setUniversityId(customerInfo.University_Id);
+                    setProfilePicture(customerInfo.Profile_Picture);
                 }
 
-                const filterData = await getFilterInfo(); // Assuming it returns universities
+                const filterData = await getFilterInfo();
                 setUniversities(
                     filterData.universities.map((uni) => ({
                         value: uni.University_Id,
@@ -111,7 +118,7 @@ export default function ProfileScreen() {
 
         const fetchActions = async () => {
             try {
-                const customerId = user.customerId || 1; // Default to 1 if user.customerId is undefined
+                const customerId = user.customerId || 1;
                 const data = await fetchCustomerActions(customerId);
                 setLikes(
                     data.filter((opinion) => opinion.Opinion_Type === 'L')
@@ -241,6 +248,16 @@ export default function ProfileScreen() {
         }
     };
 
+    const handleViewReviews = (clothing) => {
+        setSelectedClothingForViewReview(clothing)
+        setViewReviewOpen(true);
+    };
+
+    const handleCancelViewReviewModal = () => {
+        setSelectedClothingForViewReview(null);
+        setViewReviewOpen(false);
+    };
+
     return loading ? (
         <div className="flex flex-col items-center justify-center h-screen">
             <p className="text-lg font-medium mb-2">Fetching Profile Info</p>
@@ -254,6 +271,13 @@ export default function ProfileScreen() {
                     onCancel={handleCancelReviewModal}
                     onPost={handlePostedReviewModal}
                     clothing={selectedClothingForReview}
+                />
+            )}
+            {selectedClothingForViewReview && (
+                <ViewReviewModal
+                    open={viewReviewOpen}
+                    onCancel={handleCancelViewReviewModal}
+                    clothing={selectedClothingForViewReview}
                 />
             )}
             <Snackbar
@@ -363,6 +387,7 @@ export default function ProfileScreen() {
                                 onReview={handleOpenReviewModal}
                                 opinionType="l"
                                 onOpinionChange={handleOpinionChange}
+                                onViewReviews={handleViewReviews}
                             />
                         ))}
                     </div>
@@ -377,6 +402,7 @@ export default function ProfileScreen() {
                                 onReview={handleOpenReviewModal}
                                 opinionType="d"
                                 onOpinionChange={handleOpinionChange}
+                                onViewReviews={handleViewReviews}
                             />
                         ))}
                     </div>

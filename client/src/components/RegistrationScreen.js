@@ -27,7 +27,7 @@ export default function RegistrationScreen() {
         height: '100px',
         objectFit: 'contain',
         aspectRatio: 1,
-        compressInitial: 0.5,
+        compressInitial: 10,
         hideDownloadBtn: true,
         hideAddBtn: true,
     };
@@ -36,7 +36,7 @@ export default function RegistrationScreen() {
         const fetchUniversities = async () => {
             try {
                 setLoading(true);
-                const data = await getFilterInfo(); // Assuming getFilterInfo returns universities
+                const data = await getFilterInfo();
                 setUniversities(
                     data.universities?.map((uni) => ({
                         value: uni.University_Id,
@@ -70,6 +70,11 @@ export default function RegistrationScreen() {
         }
     };
 
+    const imageSaveHandler = (newDataUri) => {
+        setProfilePicture(newDataUri);
+        // console.log(newDataUri);
+    };
+
     return (
         <div
             className="flex items-center justify-center h-screen"
@@ -89,9 +94,7 @@ export default function RegistrationScreen() {
                         <div className="mx-auto justify-center flex flex-row">
                             <ReactImagePickerEditor
                                 config={config2}
-                                imageChanged={(newDataUri) =>
-                                    setProfilePicture(newDataUri)
-                                }
+                                imageChanged={imageSaveHandler}
                             />
                         </div>
                     </div>
