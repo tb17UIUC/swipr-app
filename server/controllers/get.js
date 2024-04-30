@@ -85,6 +85,66 @@ module.exports = function (getPoolConnection) {
         }
     };
 
+    const readReview = async (req, res) => {
+        const clothingId = req.params.id;
+        try {
+            const connection = await getPoolConnection();
+            let query = `SELECT Clothing_Id, Brand, Star_Rating, Fit, Text FROM Reviews WHERE Clothing_Id = ?`;
+            const [results] = await connection.execute(query, [clothingId]);
+            res.json(results);
+            connection.release();
+        } catch (error) {
+            console.error('Failed to retrieve reviews:', error);
+            res.status(500).send('Failed to retrieve reviews');
+        }
+    };
+
+    const filterReview = async (req, res) => {
+        const {
+            MaxPrice,
+            MinPrice,
+            Sustainability,
+            Brand,
+            MIUSA,
+            MO,
+            Star_Rating,
+        } = req.query;
+
+        // console.log(req.body);
+        // console.log(req.params);
+        // console.log(req.query);
+        // console.log(
+        //     MaxPrice,
+        //     MinPrice,
+        //     Sustainability,
+        //     Brand,
+        //     MIUSA,
+        //     MO,
+        //     Star_Rating
+        // );
+
+        const query = `CALL FilterReviews(?,?,?,?,?,?,?)`;
+        const values = [
+            MaxPrice,
+            MinPrice,
+            Sustainability,
+            Brand,
+            MIUSA,
+            MO,
+            Star_Rating,
+        ];
+        try {
+            const connection = await getPoolConnection();
+            const [results] = await connection.query(query, values);
+            res.json(results);
+            console.log(results);
+            connection.release();
+        } catch (error) {
+            console.error('Error filtering review:', error);
+            res.status(500).send('Error filtering review');
+        }
+    };
+
     const getFilterInfo = async (req, res) => {
         try {
             const connection = await getPoolConnection();
@@ -225,6 +285,8 @@ module.exports = function (getPoolConnection) {
     return {
         getFilteredClothes,
         getMatches,
+        readReview,
+        filterReview,
         getFilterInfo,
         getCustomerActions,
         getClothingOpinions,

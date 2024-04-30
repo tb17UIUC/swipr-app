@@ -14,6 +14,7 @@ import { getFilterInfo } from '../api/FilterInfo';
 import clsx from 'clsx';
 import { useUser } from '../UserContext';
 import { useSpring, animated } from 'react-spring';
+import ViewReviewModal from './ViewReviewModal';
 
 export default function ClothesScreen() {
     const { user } = useUser();
@@ -30,6 +31,10 @@ export default function ClothesScreen() {
     const [{ x, opacity }, set] = useSpring(() => ({ x: 0, opacity: 1 }));
 
     const [panelState, setPanelState] = useState('closed');
+
+    const [viewReviewOpen, setViewReviewOpen] = useState(false);
+    const [selectedClothingForViewReview, setSelectedClothingForViewReview] =
+        useState(null);
 
     const toggleFilterPanel = () => {
         if (panelState === 'open' || panelState === 'opening') {
@@ -117,6 +122,16 @@ export default function ClothesScreen() {
         }
     };
 
+    const handleViewReviews = (clothing) => {
+        setSelectedClothingForViewReview(clothing)
+        setViewReviewOpen(true);
+    };
+
+    const handleCancelViewReviewModal = () => {
+        setSelectedClothingForViewReview(null);
+        setViewReviewOpen(false);
+    };
+
     return isLoading ? (
         <div className="flex flex-col items-center justify-center h-screen">
             <p className="text-lg font-medium mb-2">
@@ -126,6 +141,13 @@ export default function ClothesScreen() {
         </div>
     ) : (
         <div className="flex flex-col items-center justify-center h-screen">
+            {selectedClothingForViewReview && (
+                <ViewReviewModal
+                    open={viewReviewOpen}
+                    onCancel={handleCancelViewReviewModal}
+                    clothing={selectedClothingForViewReview}
+                />
+            )}
             <Navbar />
             <div className="fixed top-16 right-0 p-5">
                 <button
@@ -177,6 +199,8 @@ export default function ClothesScreen() {
                         {currentIndex < clothingItems.length && (
                             <ClothingCard
                                 clothing={clothingItems[currentIndex]}
+                                onViewReviews={handleViewReviews}
+
                             />
                         )}
                     </animated.div>

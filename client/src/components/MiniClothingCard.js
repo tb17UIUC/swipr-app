@@ -10,6 +10,7 @@ const MiniClothingCard = ({
     onDelete,
     onPurchase,
     onReview,
+    onViewReviews,
     opinionType,
     onOpinionChange,
 }) => {
@@ -68,21 +69,26 @@ const MiniClothingCard = ({
                     )}
                 </div>
             </div>
-            <div className="flex flex-row h-20">
+            <div className="flex justify-center mt-4">
                 {!clothing.Purchased ? (
                     <button
-                        className="mr-auto my-auto bg-tertiary text-white rounded hover:bg-primary h-16 w-56 p-2"
+                        className="ml-auto my-auto bg-tertiary text-white rounded hover:bg-primary h-10 w-40 text-lg left-3"
                         onClick={() => onPurchase(clothing.Clothing_Id)}
                     >
-                        Have you purchased this item?
+                        Purchased?
                     </button>
                 ) : (
-                    <p className="ml-auto my-auto text-green-500 font-semibold">
-                        You've purchased this item!
+                    <p className="ml-auto my-auto text-green-500 font-semibold text-lg">
+                        It's purchased!
                     </p>
                 )}
+                <button className="ml-auto my-auto bg-tertiary text-white rounded hover:bg-primary h-10 w-40 text-lg px-4"
+                    onClick={() => onViewReviews(clothing)}
+                >
+                    View Reviews
+                </button>
                 <button
-                    className="ml-auto my-auto bg-tertiary text-white rounded hover:bg-primary h-16 w-56 p-2"
+                    className="ml-auto my-auto bg-tertiary text-white rounded hover:bg-primary h-10 w-50 text-lg px-4"
                     onClick={() => onReview(clothing)}
                 >
                     Review This Item
