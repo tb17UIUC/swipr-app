@@ -56,9 +56,9 @@ module.exports = function (getPoolConnection) {
                 params.push(stars);
             }
 
-            console.log(params, conditions);
+            // console.log(params, conditions);
 
-            console.log(query);
+            // console.log(query);
             const [results] = await connection.query(query, params);
             res.json(results);
             connection.release();
@@ -70,8 +70,8 @@ module.exports = function (getPoolConnection) {
 
     const getClothesById = async (req, res) => {
         try {
-            const {id} = req.query;
-            console.log(id)
+            const { id } = req.query;
+            // console.log(id)
             // console.log(customerId, typeof customerId);
             const connection = await getPoolConnection();
             let query = `SELECT C.Clothing_Id, C.Name, C.Clothing_Color, C.Brand, C.Type, C.Price, C.Image, C.URL FROM Clothes C WHERE C.Clothing_Id = ${id}`;
@@ -155,7 +155,7 @@ module.exports = function (getPoolConnection) {
             const connection = await getPoolConnection();
             const [results] = await connection.query(query, values);
             res.json(results);
-            console.log(results);
+            // console.log(results);
             connection.release();
         } catch (error) {
             console.error('Error filtering review:', error);

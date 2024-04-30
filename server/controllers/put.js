@@ -64,8 +64,16 @@ module.exports = function (getPoolConnection) {
     };
 
     const putClothes = async (req, res) => {
-        const { Brand, Clothing_Color, Clothing_Id, Image, Name, Price, Type, URL } = 
-            req.body;
+        const {
+            Brand,
+            Clothing_Color,
+            Clothing_Id,
+            Image,
+            Name,
+            Price,
+            Type,
+            URL,
+        } = req.body;
         //console.log(req.body)
         const clothingId = req.params.id;
 
@@ -80,7 +88,7 @@ module.exports = function (getPoolConnection) {
             URL,
             Clothing_Id,
         ];
-        console.log(values)
+        // console.log(values)
 
         try {
             const connection = await getPoolConnection();

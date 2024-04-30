@@ -185,7 +185,10 @@ const FilterReviewModal = ({ filterReviewFunc, onClose }) => {
                 <div className="flex justify-center items-center">
                     <button
                         className="bg-white text-primary rounded hover:bg-tertiary h-10 w-40 text-lg px-4"
-                        onClick={() => {filterReviewFunc(FilterArray()); onClose()}}
+                        onClick={() => {
+                            filterReviewFunc(FilterArray());
+                            onClose();
+                        }}
                     >
                         <strong>View Reviews</strong>
                     </button>
