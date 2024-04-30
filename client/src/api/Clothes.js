@@ -17,6 +17,20 @@ export const getFilteredClothes = async (filters) => {
     }
 };
 
+export const getClothesById = async (filters) => {
+    console.log(filters);
+
+    try {
+        const response = await client.get('/clothes/get-id', {
+            params: filters,
+        });
+        // console.log(response.data); // Logging the response data
+        return response.data;
+    } catch (error) {
+        console.error('Failed to retrieve clothes:', error);
+    }
+};
+
 export const getMatches = async (filters) => {
     try {
         const response = await client.get('/clothes/get-matches', {
@@ -43,11 +57,22 @@ export const updateClothing = async (clothingId, clothingData) => {
 };
 
 export const deleteClothing = async (clothingId) => {
+
     try {
-        const response = await client.delete(`/clothes/delete/${clothingId}`);
+        const response = await client.delete(`/clothes/delete/`, {data: {clothingId},});
         return response.data;
     } catch (error) {
         console.error('Failed to delete clothing:', error);
         throw error;
+    }
+};
+
+export const addClothing = async (filters) => {
+    try {
+        await client.post('/clothes/create', filters);
+        console.log('Clothing added successfully!');
+    } catch (err) {
+        console.error('Error adding clothing:', err);
+        throw err;
     }
 };

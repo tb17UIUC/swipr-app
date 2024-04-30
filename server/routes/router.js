@@ -34,6 +34,7 @@ module.exports = function (getPoolConnection) {
     // Import controllers with the connection pool handler
     const {
         getFilteredClothes,
+        getClothesById,
         getMatches,
         readReview, 
         filterReview,
@@ -61,10 +62,11 @@ module.exports = function (getPoolConnection) {
     } = require('../controllers/delete')(getPoolConnection);
 
     router.get('/api/clothes/get-filtered', getFilteredClothes);
+    router.get('/api/clothes/get-id', getClothesById);
     router.get('/api/clothes/get-matches', getMatches);
     router.post('/api/clothes/create', bodyParser.json(), postClothes);
     router.put('/api/clothes/update/:id', bodyParser.json(), putClothes);
-    router.delete('/api/clothes/delete/:id', deleteClothing);
+    router.delete('/api/clothes/delete/', deleteClothing);
 
     router.post('/api/opinions/create', bodyParser.json(), postOpinion);
     router.get('/api/opinions/get-customer-opinions/:id', getCustomerActions);
@@ -76,7 +78,7 @@ module.exports = function (getPoolConnection) {
     router.get('/api/customer/info/:id', getCustomerInfo);
     router.post('/api/customer/login', bodyParser.json(), loginCustomer);
     router.put('/api/customer/update/:id', bodyParser.json(), putCustomer);
-    router.delete('/api/customer/delete/:id', deleteCustomer);
+    router.delete('/api/customer/delete/', deleteCustomer);
 
     router.post('/api/purchases/create', bodyParser.json(), postPurchase);
     router.delete('/api/purchases/delete', bodyParser.json(), deletePurchase);
@@ -88,6 +90,9 @@ module.exports = function (getPoolConnection) {
     router.delete('/api/reviews/delete', bodyParser.json(), deleteReview);
 
     router.get('/api/filters/get-info', getFilterInfo);
+
+    // for admin page
+
 
     return router;
 };

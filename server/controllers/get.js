@@ -68,6 +68,24 @@ module.exports = function (getPoolConnection) {
         }
     };
 
+    const getClothesById = async (req, res) => {
+        try {
+            const {id} = req.query;
+            console.log(id)
+            // console.log(customerId, typeof customerId);
+            const connection = await getPoolConnection();
+            let query = `SELECT C.Clothing_Id, C.Name, C.Clothing_Color, C.Brand, C.Type, C.Price, C.Image, C.URL FROM Clothes C WHERE C.Clothing_Id = ${id}`;
+            // console.log(query);
+            const [results] = await connection.query(query);
+            //shuffleArray(results);
+            res.json(results);
+            connection.release();
+        } catch (error) {
+            console.error('Failed to retrieve matches:', error);
+            res.status(500).send('Failed to retrieve matches');
+        }
+    };
+
     const getMatches = async (req, res) => {
         try {
             const { customerId } = req.query;
@@ -253,8 +271,11 @@ module.exports = function (getPoolConnection) {
     const getCustomerInfo = async (req, res) => {
         const customerId = req.params.id;
 
-        const query = `SELECT Customer_Id, Email, First_Name, Last_Name, University_Id, Profile_Picture FROM Customers WHERE Customer_Id = ?`;
-
+        const query = `
+        SELECT Customer_Id, Email, First_Name, Last_Name, University_Id, TO_BASE64(Profile_Picture) as Profile_Picture, Skin_Color_H, Skin_Color_S, Skin_Color_V
+        FROM Customers
+        WHERE Customer_Id = ?
+    `;
         try {
             const connection = await getPoolConnection();
             const [result] = await connection.query(query, [customerId]);
@@ -284,6 +305,7 @@ module.exports = function (getPoolConnection) {
 
     return {
         getFilteredClothes,
+        getClothesById,
         getMatches,
         readReview,
         filterReview,
