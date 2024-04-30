@@ -64,21 +64,23 @@ module.exports = function (getPoolConnection) {
     };
 
     const putClothes = async (req, res) => {
-        const { name, clothingColor, brand, type, price, image, url } =
+        const { Brand, Clothing_Color, Clothing_Id, Image, Name, Price, Type, URL } = 
             req.body;
+        //console.log(req.body)
         const clothingId = req.params.id;
 
-        const query = `UPDATE Clothes SET Name = ?, Clothing_Color = ?, Brand = ?, Type = ?, Price = ?, Image = ?, URL = ? WHERE Clothing_Id = ?;`;
+        const query = `UPDATE Clothes SET Brand = ?, Clothing_Color = ?, Image = ?, Name = ?, Price = ?, Type = ?, URL = ? WHERE Clothing_Id = ?;`;
         const values = [
-            name,
-            clothingColor,
-            brand,
-            type,
-            price,
-            image,
-            url,
-            clothingId,
+            Brand,
+            Clothing_Color,
+            Image,
+            Name,
+            Price,
+            Type,
+            URL,
+            Clothing_Id,
         ];
+        console.log(values)
 
         try {
             const connection = await getPoolConnection();

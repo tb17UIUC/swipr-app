@@ -52,6 +52,24 @@ export const updateCustomer = async (customerData, customerId) => {
     }
 };
 
+
+export const deleteCustomer = async (customerId) => {
+    try {
+        const response = await client.delete(
+            '/customer/delete/', {data: {customerId},});
+        if (response.status === 200) {
+            console.log('Customer deleted successfully');
+            return true;
+        } else {
+            console.log('Delete failed with status:', response.status);
+            return false;
+        }
+    } catch (error) {
+        console.error('Failed to Delete customer:', error);
+        throw error;
+    }
+};
+
 export const fetchCustomerInfo = async (customerId) => {
     try {
         const response = await client.get(`/customer/info/${customerId}`);

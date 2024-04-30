@@ -140,14 +140,14 @@ module.exports = function (getPoolConnection) {
     };
 
     const postClothes = async (req, res) => {
-        const { name, clothingColor, brand, type, price, image, url } =
+        const {Name, Clothing_Color, Brand, Type, Price, Image, URL} =
             req.body;
 
         const query = `
         INSERT INTO Clothes (Name, Clothing_Color, Brand, Type, Price, Image, URL)
         VALUES (?, ?, ?, ?, ?, ?, ?);
     `;
-        const values = [name, clothingColor, brand, type, price, image, url];
+        const values = [Name, Clothing_Color, Brand, Type, Price, Image, URL];
 
         try {
             const connection = await getPoolConnection();

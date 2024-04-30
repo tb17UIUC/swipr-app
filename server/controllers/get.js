@@ -212,7 +212,7 @@ module.exports = function (getPoolConnection) {
         const customerId = req.params.id;
 
         const query = `
-        SELECT Customer_Id, Email, First_Name, Last_Name, University_Id, TO_BASE64(Profile_Picture) as Profile_Picture
+        SELECT Customer_Id, Email, First_Name, Last_Name, University_Id, TO_BASE64(Profile_Picture) as Profile_Picture, Skin_Color_H, Skin_Color_S, Skin_Color_V
         FROM Customers
         WHERE Customer_Id = ?
     `;

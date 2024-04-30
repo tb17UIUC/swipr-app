@@ -1,12 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { getClothesById, getFilteredClothes, addClothingItem, deleteClothingItem } from '../api/Clothes';
+import { getClothesById, getFilteredClothes, addClothing, deleteClothing, updateClothing} from '../api/Clothes';
 import { fetchCustomerInfo, addCustomer, deleteCustomer } from '../api/Customers';
 import ClothingCard from './ClothingCard';
 import EditClothingCard from './EditClothingCard';
+import {
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogContentText,
+    TextField,
+    DialogActions,
+    Button,
+    Select,
+    MenuItem,
+    InputLabel,
+    FormControl,
+} from '@mui/material';
 
 export default function AdminScreen() {
     const [clothingId, setClothingId] = useState('');
     const [customerId, setCustomerId] = useState('');
+    const [tempCustomerId, setTempCustomerId] = useState('');
+    const [tempClothingId, setTempClothingId] = useState('');
     const [clothingData, setClothingData] = useState({});
     const [customerData, setCustomerData] = useState({});
     const [showClothingDetails, setShowClothingDetails] = useState(false);
@@ -14,6 +29,7 @@ export default function AdminScreen() {
     const [editMode, setEditMode] = useState(false);
     const [editedClothingData, setEditedClothingData] = useState({});
     const [newClothingData, setNewClothingData] = useState({
+        Name: '',
         Clothing_Color: '',
         Brand: '',
         Type: '',
@@ -34,6 +50,15 @@ export default function AdminScreen() {
     const [showAddClothing, setShowAddClothing] = useState(false);
     const [showManageCustomer, setShowManageCustomer] = useState(false);
 
+    const [error, setError] = useState('');
+    const [showErrorDialog, setShowErrorDialog] = useState(false);
+
+    const handleDeleteError = (errorMessage) => {
+        setError(errorMessage);
+        setShowErrorDialog(true);
+        console.log(errorMessage)
+    };
+
     const handleHideManageClothing = () => {
         setShowClothingDetails(false);
     };
@@ -49,27 +74,58 @@ export default function AdminScreen() {
     const handleHideManageCustomer = () => {
         setShowManageCustomer(false);
     };
+
+    useEffect(() => {
+        if (clothingId !== '') {
+            //console.log(clothingId)
+            handleClothingSearch();
+        }
+    }, [clothingId]);
     
 
     const handleClothingSearch = async () => {
-        try {
-            const filters = { id: clothingId };
-            const data = await getClothesById(filters);
-            setClothingData(data);
-            setShowClothingDetails(true);
-        } catch (error) {
-            console.error('Failed to fetch clothing:', error);
-            setShowClothingDetails(false);
+        setClothingId(tempClothingId)
+        if(clothingId != ''){
+            try {
+                const filters = { id: clothingId };
+                const data = await getClothesById(filters);
+                if(data.length == 0){
+                    handleDeleteError("Sorry, failed to fetch clothing.");
+                    setShowClothingDetails(false);
+                }
+                else{
+                    setClothingData(data);
+                    setEditedClothingData(data);
+                    setShowClothingDetails(true);
+                    console.log(clothingData)
+                    console.log(editedClothingData)
+                }
+            } catch (error) {
+                console.error('Failed to fetch clothing:', error);
+                setShowClothingDetails(false);
+                handleDeleteError("Sorry, failed to fetch clothing.");
+            }
         }
     };
 
+    useEffect(() => {
+        if (customerId !== '') {
+            handleCustomerSearch();
+        }
+    }, [customerId]);
+
     const handleCustomerSearch = async () => {
-        try {
-            const data = await fetchCustomerInfo(customerId);
-            setCustomerData(data);
-            setShowManageCustomer(true);
-        } catch (error) {
-            console.error('Failed to fetch customer info:', error);
+        setCustomerId(tempCustomerId);
+        if(customerId != ''){
+            try {
+                const data = await fetchCustomerInfo(customerId);
+                setCustomerData(data);
+                setShowManageCustomer(true);
+            } catch (error) {
+                console.error('Failed to fetch customer info:', error);
+                handleDeleteError("Sorry, that customer does not exist.");
+                setShowManageCustomer(false);
+            }
         }
     };
 
@@ -79,17 +135,19 @@ export default function AdminScreen() {
             console.log('Customer added successfully');
         } catch (error) {
             console.error('Failed to add customer:', error);
+            handleDeleteError("Sorry, that customer cannot be added.");
         }
     };
 
     const handleDeleteCustomer = async () => {
         try {
-            //await deleteCustomer(customerId);
+            await deleteCustomer(customerId);
             console.log('Customer deleted successfully');
             setCustomerId('');
             setCustomerData({});
         } catch (error) {
             console.error('Failed to delete customer:', error);
+            handleDeleteError("Sorry, that customer does not exist.");
         }
     };
 
@@ -97,32 +155,39 @@ export default function AdminScreen() {
         try {
             // Assuming editClothingData contains the updated information
             // Update the clothing item
-            // await updateClothingItem(editClothingData);
+            console.log(editedClothingData)
+            
+            await updateClothing(clothingId, editedClothingData[0]);
             console.log('Clothing item updated successfully');
             setEditMode(false);
+            setShowClothingDetails(false);
         } catch (error) {
             console.error('Failed to update clothing item:', error);
+            handleDeleteError("Sorry, that clothing cannot be updated.");
         }
     };
 
     const handleAddClothing = async () => {
         try {
-            //await addClothingItem(newClothingData);
+            await addClothing(newClothingData);
             console.log('Clothing item added successfully');
+            setShowAddClothing(false);
         } catch (error) {
             console.error('Failed to add clothing item:', error);
+            handleDeleteError("Sorry, that clothing cannot be added.");
         }
     };
 
     const handleDeleteClothing = async (clothingId) => {
         try {
-            //await deleteClothingItem(clothingId);
+            await deleteClothing(clothingId);
             console.log('Clothing item deleted successfully');
             setClothingId('');
             setClothingData({});
             setShowClothingDetails(false);
         } catch (error) {
             console.error('Failed to delete clothing item:', error);
+            handleDeleteError("Sorry, that clothing does not exist.");
         }
     };
 
@@ -137,8 +202,9 @@ export default function AdminScreen() {
         <h2 className="text-lg font-bold text-white mb-4">Manage Customers</h2>
         <input
             type="text"
-            value={customerId}
-            onChange={(e) => setCustomerId(e.target.value)}
+            id="customerIdInput"
+            value={tempCustomerId}
+            onChange={(e) => setTempCustomerId(e.target.value)}
             placeholder="Enter Customer ID"
             className="mb-2 mr-2 p-2 border rounded"
         />
@@ -168,10 +234,10 @@ export default function AdminScreen() {
     <div className="w-full md:w-1/2 p-4 border border-teal-500 bg-primary rounded-lg shadow-xl">
         <h2 className="text-lg text-white font-bold mb-4">Manage Clothing</h2>
             <input
-                id="clothingId"
+                id="clothingIdInput"
                 type="text"
-                value={clothingId}
-                onChange={(e) => setClothingId(e.target.value)}
+                value={tempClothingId}
+                onChange={(e) => setTempClothingId(e.target.value)}
                 placeholder="Enter Clothing ID"
                 className="p-2 mr-2 border rounded"
             />
@@ -193,8 +259,12 @@ export default function AdminScreen() {
                 <label htmlFor="name" className="text-white mb-1">Name:</label>
                 <input
                     type="text"
-                    value={editedClothingData.Name || clothingData[0].Name}
-                    onChange={(e) => setEditedClothingData({ ...editedClothingData, Name: e.target.value })}
+                    value={editedClothingData.Name || (clothingData.length > 0 ? clothingData[0].Name : '')}
+                    onChange={(e) => {
+                        const updatedClothingData = [...editedClothingData]; // Create a copy of the array
+                        updatedClothingData[0].Name = e.target.value; // Update the Price property of the first element
+                        setEditedClothingData(updatedClothingData); // Update the state with the modified array
+                      }}
                     className="mb-2 p-2 border rounded"
                 />
                 </div>
@@ -203,8 +273,12 @@ export default function AdminScreen() {
                 <label htmlFor="brand" className="text-white mb-1">Brand:</label>
                 <input
                     type="text"
-                    value={editedClothingData.Brand || clothingData[0].Brand}
-                    onChange={(e) => setEditedClothingData({ ...editedClothingData, Brand: e.target.value })}
+                    value={editedClothingData.Brand || (clothingData.length > 0 ? clothingData[0].Brand : '')}
+                    onChange={(e) => {
+                        const updatedClothingData = [...editedClothingData]; // Create a copy of the array
+                        updatedClothingData[0].Brand = e.target.value; // Update the Price property of the first element
+                        setEditedClothingData(updatedClothingData); // Update the state with the modified array
+                      }}
                     className="mb-2 p-2 border rounded"
                 />
                 </div>
@@ -213,8 +287,13 @@ export default function AdminScreen() {
                 <label htmlFor="price" className="text-white mb-1">Price:</label>
                 <input
                     type="number"
-                    value={editedClothingData.Price || clothingData[0].Price}
-                    onChange={(e) => setEditedClothingData({ ...editedClothingData, Price: e.target.value })}
+                    value={editedClothingData.Price || (clothingData.length > 0 ? clothingData[0].Price : '')}
+
+                    onChange={(e) => {
+                        const updatedClothingData = [...editedClothingData]; // Create a copy of the array
+                        updatedClothingData[0].Price = e.target.value; // Update the Price property of the first element
+                        setEditedClothingData(updatedClothingData); // Update the state with the modified array
+                      }}
                     className="mb-2 p-2 border rounded"
                 />
                 </div>
@@ -223,8 +302,12 @@ export default function AdminScreen() {
                 <label htmlFor="color" className="text-white mb-1">Clothing_Color:</label>
                 <input
                     type="text"
-                    value={editedClothingData.Clothing_Color || clothingData[0].Clothing_Color}
-                    onChange={(e) => setEditedClothingData({ ...editedClothingData, Clothing_Color: e.target.value })}
+                    value={editedClothingData.Clothing_Color || (clothingData.length > 0 ? clothingData[0].Clothing_Color : '')}
+                    onChange={(e) => {
+                        const updatedClothingData = [...editedClothingData]; // Create a copy of the array
+                        updatedClothingData[0].Clothing_Color = e.target.value; // Update the Price property of the first element
+                        setEditedClothingData(updatedClothingData); // Update the state with the modified array
+                      }}
                     className="mb-2 p-2 border rounded"
                 />
                 </div>
@@ -233,8 +316,12 @@ export default function AdminScreen() {
                 <label htmlFor="type" className="text-white mb-1">Type:</label>
                 <input
                     type="text"
-                    value={editedClothingData.Type || clothingData[0].Type}
-                    onChange={(e) => setEditedClothingData({ ...editedClothingData, Type: e.target.value })}
+                    value={editedClothingData.Type || (clothingData.length > 0 ? clothingData[0].Type : '')}
+                    onChange={(e) => {
+                        const updatedClothingData = [...editedClothingData]; // Create a copy of the array
+                        updatedClothingData[0].Type = e.target.value; // Update the Price property of the first element
+                        setEditedClothingData(updatedClothingData); // Update the state with the modified array
+                      }}
                     className="mb-2 p-2 border rounded"
                 />
                 </div>
@@ -243,8 +330,12 @@ export default function AdminScreen() {
                 <label htmlFor="image" className="text-white mb-1">Image:</label>
                 <input
                     type="text"
-                    value={editedClothingData.Image || clothingData[0].Image}
-                    onChange={(e) => setEditedClothingData({ ...editedClothingData, Image: e.target.value })}
+                    value={editedClothingData.Image || (clothingData.length > 0 ? clothingData[0].Image : '')}
+                    onChange={(e) => {
+                        const updatedClothingData = [...editedClothingData]; // Create a copy of the array
+                        updatedClothingData[0].Image = e.target.value; // Update the Price property of the first element
+                        setEditedClothingData(updatedClothingData); // Update the state with the modified array
+                      }}
                     className="mb-2 p-2 border rounded"
                 />
                 </div>
@@ -253,8 +344,12 @@ export default function AdminScreen() {
                 <label htmlFor="url" className="text-white mb-1">URL:</label>
                 <input
                     type="text"
-                    value={editedClothingData.URL || clothingData[0].URL}
-                    onChange={(e) => setEditedClothingData({ ...editedClothingData, URL: e.target.value })}
+                    value={editedClothingData.URL || (clothingData.length > 0 ? clothingData[0].URL : '')}
+                    onChange={(e) => {
+                        const updatedClothingData = [...editedClothingData]; // Create a copy of the array
+                        updatedClothingData[0].URL = e.target.value; // Update the Price property of the first element
+                        setEditedClothingData(updatedClothingData); // Update the state with the modified array
+                      }}
                     className="mb-2 p-2 border rounded"
                 />
                 </div>
@@ -283,7 +378,12 @@ export default function AdminScreen() {
                     type="text"
                     id="name"
                     value={newClothingData.Name}
-                    onChange={(e) => setNewClothingData({ ...newClothingData, Name: e.target.value })}
+                    onChange={(e) => {
+                        console.log(newClothingData)
+                        const updatedClothingData = {...newClothingData};
+                        updatedClothingData.Name = e.target.value; // Update the Price property of the first element
+                        setNewClothingData(updatedClothingData); // Update the state with the modified array
+                      }}
                     placeholder="Name"
                     className="mb-2 p-2 border rounded"
                 />
@@ -294,7 +394,11 @@ export default function AdminScreen() {
                     type="text"
                     id="brand"
                     value={newClothingData.Brand}
-                    onChange={(e) => setNewClothingData({ ...newClothingData, Brand: e.target.value })}
+                    onChange={(e) => {
+                        const updatedClothingData = {...newClothingData}; // Create a copy of the array
+                        updatedClothingData.Brand = e.target.value; // Update the Price property of the first element
+                        setNewClothingData(updatedClothingData); // Update the state with the modified array
+                      }}
                     placeholder="Brand"
                     className="mb-2 p-2 border rounded"
                 />
@@ -305,7 +409,11 @@ export default function AdminScreen() {
                     type="number"
                     id="price"
                     value={newClothingData.Price}
-                    onChange={(e) => setNewClothingData({ ...newClothingData, Price: e.target.value })}
+                    onChange={(e) => {
+                        const updatedClothingData = {...newClothingData}; // Create a copy of the array
+                        updatedClothingData.Price = e.target.value; // Update the Price property of the first element
+                        setNewClothingData(updatedClothingData); // Update the state with the modified array
+                      }}
                     placeholder="Price"
                     className="mb-2 p-2 border rounded"
                 />
@@ -317,8 +425,12 @@ export default function AdminScreen() {
                     type="text"
                     id="colothingcolor"
                     value={newClothingData.Clothing_Color}
-                    onChange={(e) => setNewClothingData({ ...newClothingData, Clothing_Color: e.target.value })}
-                    placeholder="Clothing COlor"
+                    onChange={(e) => {
+                        const updatedClothingData = {...newClothingData}; // Create a copy of the array
+                        updatedClothingData.Clothing_Color = e.target.value; // Update the Price property of the first element
+                        setNewClothingData(updatedClothingData); // Update the state with the modified array
+                      }}
+                    placeholder="Clothing Color"
                     className="mb-2 p-2 border rounded"
                 />
             </div>
@@ -329,7 +441,11 @@ export default function AdminScreen() {
                     type="text"
                     id="type"
                     value={newClothingData.Type}
-                    onChange={(e) => setNewClothingData({ ...newClothingData, Type: e.target.value })}
+                    onChange={(e) => {
+                        const updatedClothingData = {...newClothingData}; // Create a copy of the array
+                        updatedClothingData.Type = e.target.value; // Update the Price property of the first element
+                        setNewClothingData(updatedClothingData); // Update the state with the modified array
+                      }}
                     placeholder="Type"
                     className="mb-2 p-2 border rounded"
                 />
@@ -341,7 +457,11 @@ export default function AdminScreen() {
                     type="text"
                     id="image"
                     value={newClothingData.Image}
-                    onChange={(e) => setNewClothingData({ ...newClothingData, Image: e.target.value })}
+                    onChange={(e) => {
+                        const updatedClothingData = {...newClothingData}; // Create a copy of the array
+                        updatedClothingData.Image = e.target.value; // Update the Price property of the first element
+                        setNewClothingData(updatedClothingData); // Update the state with the modified array
+                      }}
                     placeholder="Image"
                     className="mb-2 p-2 border rounded"
                 />
@@ -352,8 +472,12 @@ export default function AdminScreen() {
                 <input
                     type="text"
                     id="url"
-                    value={newClothingData.Image}
-                    onChange={(e) => setNewClothingData({ ...newClothingData, URL: e.target.value })}
+                    value={newClothingData.URL}
+                    onChange={(e) => {
+                        const updatedClothingData = {...newClothingData}; // Create a copy of the array
+                        updatedClothingData.URL = e.target.value; // Update the Price property of the first element
+                        setNewClothingData(updatedClothingData); // Update the state with the modified array
+                      }}
                     placeholder="URL"
                     className="mb-2 p-2 border rounded"
                 />
@@ -367,6 +491,19 @@ export default function AdminScreen() {
         </>
     )}
     </div>
+    {showErrorDialog && (
+        <Dialog onClose={() => setShowErrorDialog(false)} open={showErrorDialog}>
+            <DialogTitle>Error</DialogTitle>
+            <DialogContent>
+                <DialogContentText>{error}</DialogContentText>
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={() => setShowErrorDialog(false)} color="primary">
+                    OK
+                </Button>
+            </DialogActions>
+        </Dialog>
+    )}
 </div>
 
 
