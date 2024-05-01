@@ -82,6 +82,7 @@ export default function ClothesScreen() {
                 }
 
                 setClothingItems(data);
+                setCurrentIndex(0);
             } catch (error) {
                 console.error('Error fetching clothes:', error);
             }
@@ -123,7 +124,7 @@ export default function ClothesScreen() {
     };
 
     const handleViewReviews = (clothing) => {
-        setSelectedClothingForViewReview(clothing)
+        setSelectedClothingForViewReview(clothing);
         setViewReviewOpen(true);
     };
 
@@ -200,7 +201,6 @@ export default function ClothesScreen() {
                             <ClothingCard
                                 clothing={clothingItems[currentIndex]}
                                 onViewReviews={handleViewReviews}
-
                             />
                         )}
                     </animated.div>

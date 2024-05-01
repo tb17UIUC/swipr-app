@@ -60,6 +60,7 @@ module.exports = function (getPoolConnection) {
 
             // console.log(query);
             const [results] = await connection.query(query, params);
+            // console.log(results);
             res.json(results);
             connection.release();
         } catch (error) {
