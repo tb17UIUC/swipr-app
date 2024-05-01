@@ -165,7 +165,9 @@ const FilterReviewModal = ({ filterReviewFunc, onClose }) => {
             </div>
 
             <div className="mb-6">
-                <label className="block mb-2">Minimum Star Rating:</label>
+                <label className="block mb-2">
+                    Minimum Average Star Rating:
+                </label>
                 <Slider
                     value={starRating}
                     onChange={handleStarRatingChange}

@@ -141,7 +141,7 @@ module.exports = function (getPoolConnection) {
         //     Star_Rating
         // );
 
-        const query = `CALL FilterReviews_t(?,?,?,?,?,?,?)`;
+        const query = `CALL Final_FilterReviews_t(?,?,?,?,?,?,?)`;
         const values = [
             MaxPrice,
             MinPrice,
