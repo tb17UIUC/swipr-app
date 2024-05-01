@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
+import NavbarAdmin from './NavbarAdmin';
 
 export default function AdminScreen() {
     const [clothingId, setClothingId] = useState('');
@@ -192,13 +193,12 @@ export default function AdminScreen() {
 
     return (
         <div
-            className="flex flex-wrap h-full justify-center items-center p-8 gap-8"
+            className="flex flex-wrap h-max justify-center items-center gap-8 pb-4"
             style={{
                 backgroundImage: `url(${require('../assets/welcome-page-bg.png')})`,
-                height: '100vh',
-                overflowY: 'auto',
             }}
         >
+            <NavbarAdmin />
             <Snackbar
                 open={openSnackbar}
                 autoHideDuration={3000}
@@ -216,7 +216,7 @@ export default function AdminScreen() {
                     {snackbarMessage}
                 </Alert>
             </Snackbar>
-            <div className="w-full md:w-1/2 p-8 border border-teal-500 bg-primary rounded-lg shadow-xl">
+            <div className="w-full md:w-1/2 p-4 border border-teal-500 bg-primary rounded-lg shadow-xl">
                 <h1 className="text-white text-center py-4 text-6xl font-bold">
                     ADMIN PAGE
                 </h1>
