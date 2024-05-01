@@ -3,8 +3,11 @@ import FilterReviewModal from './FilterReview';
 import { filterReview } from '../api/Reviews';
 import React, { useState } from 'react';
 import { TailSpin } from 'react-loading-icons';
+import { useUser } from '../UserContext';
 
 export default function ReviewsScreen() {
+    const { user } = useUser();
+    console.log(user);
     const [filterInfo, setFilterInfo] = useState({});
     const [showFilterModal, setShowFilterModal] = useState(true);
     const [showAdditionalBox, setShowAdditionalBox] = useState(false);

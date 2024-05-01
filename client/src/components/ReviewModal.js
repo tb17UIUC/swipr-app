@@ -32,7 +32,7 @@ const ReviewModal = ({ open, onCancel, onPost, clothing }) => {
             text: reviewText,
         };
 
-        console.log(reviewInfo);
+        // console.log(reviewInfo);
 
         createReview(reviewInfo)
             .then(() => {
