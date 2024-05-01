@@ -45,7 +45,7 @@ module.exports = function (getPoolConnection) {
         );
         const matchingColors = matches.map((match) => match.color).join(',');
 
-        const callProcedure = 'CALL RegisterUser(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+        const callProcedure = 'CALL RegisterUser_t(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
         const params = [
             email,
             password,
