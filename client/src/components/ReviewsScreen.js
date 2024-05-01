@@ -17,8 +17,8 @@ export default function ReviewsScreen() {
         try {
             const response = await filterReview(filters);
             setFilterInfo(response[0]);
-            setIsLoading(false);
             setShowAdditionalBox(true);
+            setIsLoading(false);
         } catch (error) {
             console.error('Failed to retrieve review:', error);
         }
@@ -29,7 +29,7 @@ export default function ReviewsScreen() {
             {isLoading ? (
                 <div className="flex flex-col items-center justify-center h-screen">
                     <p className="text-lg font-medium mb-2">
-                        Fetching recommendations!
+                        Fetching reviews!
                     </p>
                     <TailSpin stroke="#4DCCBD" />
                 </div>
